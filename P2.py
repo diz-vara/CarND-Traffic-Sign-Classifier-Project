@@ -93,11 +93,46 @@ print("Number of classes =", n_classes)
 
 # In[16]:
 
-### Data exploration visualization code goes here.
-### Feel free to use as many code cells as needed.
+#count number of each class examples
+#and store the index of the last one
+indexes = np.zeros(n_classes,dtype=int)
+bins= np.zeros(n_classes,dtype=int)
+
+for i in range(n_train):
+    cls= y_train[i]
+    if (indexes[cls] == 0):
+        indexes[cls] = i
+    bins[cls]=bins[cls] + 1
+
+
+#%%
 import matplotlib.pyplot as plt
 # Visualizations will be shown in the notebook.
 get_ipython().magic('matplotlib inline')
+import matplotlib.gridspec as gridspec
+
+#display example of each class and show number of samples
+cols = 4
+figsize = (10, 20)
+
+gs = gridspec.GridSpec(n_classes // cols + 1, cols)
+
+fig1 = plt.figure(num=1, figsize=figsize)
+ax = []
+for i in range(n_classes):
+    row = (i // cols)
+    col = i % cols
+    ax.append(fig1.add_subplot(gs[row, col]))
+    ax[-1].set_title('class %d, N=%d' % (i ,  bins[i]))
+    #example
+    img = X_train[indexes[i]]
+    #rescale to make dark images visible
+    cf = np.int(255/np.max(img)) 
+    ax[-1].imshow(img*cf)
+    ax[-1].axis('off')
+    
+    
+#%%    
 
 
 # ----
