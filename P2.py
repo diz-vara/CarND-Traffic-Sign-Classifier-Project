@@ -26,6 +26,9 @@
 
 # Load pickled data
 import pickle
+import numpy as np
+import math
+import cv2
 
 # TODO: Fill this in based on where you saved the training and testing data
 
@@ -95,14 +98,8 @@ print("Number of classes =", n_classes)
 
 #count number of each class examples
 #and store the index of the last one
-indexes = np.zeros(n_classes,dtype=int)
-bins= np.zeros(n_classes,dtype=int)
-
-for i in range(n_train):
-    cls= y_train[i]
-    if (indexes[cls] == 0):
-        indexes[cls] = i
-    bins[cls]=bins[cls] + 1
+indexes = [np.where(y_train == i)[0] for i in range(n_classes)]
+counts = [np.size(array) for array in indexes]
 
 
 #%%
@@ -123,9 +120,9 @@ for i in range(n_classes):
     row = (i // cols)
     col = i % cols
     ax.append(fig1.add_subplot(gs[row, col]))
-    ax[-1].set_title('class %d, N=%d' % (i ,  bins[i]))
+    ax[-1].set_title('class %d, N=%d' % (i ,  counts[i]))
     #example
-    img = X_train[indexes[i]]
+    img = X_train[indexes[i][3]]
     #rescale to make dark images visible
     cf = np.int(255/np.max(img)) 
     ax[-1].imshow(img*cf)
@@ -163,13 +160,190 @@ for i in range(n_classes):
 ### Preprocess the data here. Preprocessing steps could include normalization, converting to grayscale, etc.
 ### Feel free to use as many code cells as needed.
 
+import math
 
-# ### Model Architecture
+def getPerspMatrix(x, y, z, size):
+    w, h = size
+    half_w = w/2.
+    half_h = h/2.
 
+    
+    rx = math.radians(x);
+    ry = math.radians(y);
+    rz = math.radians(z);
+    
+    cos_x = math.cos(rx);
+    sin_x = math.sin(rx);
+    cos_y = math.cos(ry);
+    sin_y = math.sin(ry);
+    cos_z = math.cos(rz);
+    sin_z = math.sin(rz);
+ 
+     # Rotation matrix:
+    # | cos(y)*cos(z)                       -cos(y)*sin(z)                     sin(y)         0 |
+    # | cos(x)*sin(z)+cos(z)*sin(x)*sin(y)  cos(x)*cos(z)-sin(x)*sin(y)*sin(z) -cos(y)*sin(y) 0 |
+    # | sin(x)*sin(z)-cos(x)*sin(y)*sin(z)  sin(x)*sin(z)+cos(x)*sin(y)*sin(z) cos(x)*cos(y)  0 |
+    # | 0                                   0                                  0              1 |
+
+    R = np.float32(
+        [
+            [cos_y * cos_z,  cos_x * sin_z + cos_z * sin_y * sin_x],
+            [-cos_y * sin_z, cos_z * cos_x - sin_z * sin_y * sin_x],
+            [sin_y,          cos_y * sin_x],
+        ]
+    )
+
+    center = np.float32([half_h, half_w])
+    offset = np.float32(
+        [
+            [-half_w, -half_h],
+            [ half_w, -half_h],
+            [ half_w,  half_h],
+            [-half_w,  half_h],
+        ]
+    )
+
+    points_z = np.dot(offset, R[2])
+    dev_z = np.vstack([w/(w + points_z), h/(h + points_z)])
+
+    new_points = np.dot(offset, R[:2].T) * dev_z.T + center
+    in_pt = np.float32([[0, 0], [w, 0], [w, h], [0, h]])
+
+    transform = cv2.getPerspectiveTransform(in_pt, new_points)
+    return transform
+
+
+
+def transformImg(img, x=0, y=0, z=0):
+    size = img.shape[:2]
+    
+    M = getPerspMatrix(x, y, z, size)
+
+    result = cv2.warpPerspective(img, M, size, borderMode=cv2.BORDER_REFLECT)
+
+    return result
+
+    
+                             
+#replicate img N times
+def augmentImage(img, N:int):
+    
+    out = [img];
+
+    rangeX = [-20, 0];
+    rangeY = [-20, 20];
+    rangeZ = [-15, 15];
+
+
+    for i in range(N):
+        x = np.random.uniform(rangeX[0], rangeX[1]);
+        y = np.random.uniform(rangeY[0], rangeY[1]);
+        z = np.random.uniform(rangeZ[0], rangeZ[1]);
+        out.append(transformImg(img,x,y,z));
+    return out;
+
+#%%    
+#build new list of N images    
+def augmentImgList(imgList, outOrN ):
+    shape = list(imgList.shape);
+    inputLen = shape[0];
+    if (type(outOrN) == int):
+        outLen = outOrN;
+        shape[0] = outLen #to form output array
+        out = np.empty(shape, np.float32)
+    elif (type(outOrN)==np.ndarray):
+        out = outOrN;
+        outLen = out.shape[0];
+    else:
+        print("invalid second argument")
+        return np.empty(0)
+        
+        
+
+    k = 0
+    l = 0
+    for  img in imgList:
+        imf = np.float32(img);
+        imf = imf - np.min(imf)
+        mx = np.max(imf)
+        if (mx > 0):
+            imf = imf / np.max(imf)
+        #imf = imf - 0.5
+        cf = np.int((outLen-k)/(inputLen-l)) + 1;
+        if (cf > 1):
+            newImages = augmentImage(imf, cf);
+            l = l+1;
+            for imNew in newImages:
+                if (k < outLen):
+                    out[k]=imNew;
+                k = k+1;
+        else:
+            if (k < outLen):
+                out[k] = imf;
+            k = k+1;
+    #print (l,k,cf)
+    return out;
+        
+                                
+#%%
+targetCount = 4000;
+targetXShape = list(X_train.shape);
+targetXShape[0] = targetCount * n_classes; #equal number for each class
+
+targetX = np.empty(targetXShape,dtype = np.float32);
+targetY = np.empty(targetXShape[0], dtype = np.uint8);
+                 
+for signClass in range(n_classes):
+    print("filling class ", signClass);
+    inputImages = X_train[indexes[signClass]];
+    augmentImgList(inputImages, targetX[signClass*targetCount:(signClass+1)*targetCount]);
+    targetY[signClass*targetCount:(signClass+1)*targetCount] = signClass;
+
+#%%
+def fil(cnt, ar=np.empty(0), value=0):
+    print(ar.shape)
+    if (ar.shape[0] != cnt):
+        s = list(ar.shape);
+        s[0] = cnt
+        ar=np.empty(s)
+    ar[:] = value;
+    return ar
+
+
+    
+#%%
+def showImgList(lst):
+    cols = 4
+    figsize = (10, 20)
+    
+    cnt = lst.shape[0]
+    
+    gs = gridspec.GridSpec(cnt // cols + 1, cols)
+    
+    fig1 = plt.figure(num=1, figsize=figsize)
+    ax = []
+    for i in range(cnt):
+        row = (i // cols)
+        col = i % cols
+        ax.append(fig1.add_subplot(gs[row, col]))
+        #example
+        img = lst[i]
+        #rescale to make dark images visible
+        #cf = np.int(255/np.max(img)) 
+        ax[-1].imshow(img)
+        ax[-1].axis('off')    
+                                 
+                                 
+                                 
+
+    
+    
+    
 # In[ ]:
 
 ### Define your architecture here.
 ### Feel free to use as many code cells as needed.
+# ### Model Architecture
 
 
 # ### Train, Validate and Test the Model
