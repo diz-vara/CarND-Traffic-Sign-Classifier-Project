@@ -109,7 +109,7 @@ get_ipython().magic('matplotlib inline')
 import matplotlib.gridspec as gridspec
 
 #display example of each class and show number of samples
-cols = 4
+cols = 6
 figsize = (10, 20)
 
 gs = gridspec.GridSpec(n_classes // cols + 1, cols)
@@ -122,11 +122,13 @@ for i in range(n_classes):
     ax.append(fig1.add_subplot(gs[row, col]))
     ax[-1].set_title('class %d, N=%d' % (i ,  counts[i]))
     #example
-    img = X_train[indexes[i][3]]
+    img = X_train[indexes[i][40]]
     #rescale to make dark images visible
     cf = np.int(255/np.max(img)) 
     ax[-1].imshow(img*cf)
     ax[-1].axis('off')
+    
+
     
     
 #%%    
@@ -287,8 +289,9 @@ def augmentImgList(imgList, outOrN ):
                                 
 #%%
 targetCount = 4000;
+totalLen = targetCount * n_classes;
 targetXShape = list(X_train.shape);
-targetXShape[0] = targetCount * n_classes; #equal number for each class
+targetXShape[0] = totalLen; 
 
 targetX = np.empty(targetXShape,dtype = np.float32);
 targetY = np.empty(targetXShape[0], dtype = np.uint8);
@@ -298,6 +301,21 @@ for signClass in range(n_classes):
     inputImages = X_train[indexes[signClass]];
     augmentImgList(inputImages, targetX[signClass*targetCount:(signClass+1)*targetCount]);
     targetY[signClass*targetCount:(signClass+1)*targetCount] = signClass;
+
+
+#%%    
+#shuffling X and Y arrays:
+    # prepare index
+idx = np.arange(totalLen);
+np.random.shuffle(idx);
+    #shuffle
+targetY = targetY[idx];
+targetX = targetX[idx];
+    
+targetTrain = {'features': targetX, 'labels': targetY}
+pickle.dump(targetTrain, open( "../data/Signs/trainAugmented.p", "wb" ) )
+
+
 
 #%%
 def fil(cnt, ar=np.empty(0), value=0):

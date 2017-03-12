@@ -1,8 +1,5 @@
 #**Traffic Sign Recognition** 
 
-##Writeup Template
-
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
 
 ---
 
@@ -19,7 +16,7 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/visualization.jpg "Visualization"
+[image1]: ./classes.png "Sign classes"
 [image2]: ./examples/grayscale.jpg "Grayscaling"
 [image3]: ./examples/random_noise.jpg "Random Noise"
 [image4]: ./examples/placeholder.png "Traffic Sign 1"
@@ -36,41 +33,46 @@ The goals / steps of this project are the following:
 
 ####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf. You can use this template as a guide for writing the report. The submission includes the project code.
 
-You're reading it! and here is a link to my [project code](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
+You're reading it! and here is a link to my [project code](https://github.com/diz-vara/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
 
 ###Data Set Summary & Exploration
 
-####1. Provide a basic summary of the data set and identify where in your code the summary was done. In the code, the analysis should be done using python, numpy and/or pandas methods rather than hardcoding results manually.
 
 The code for this step is contained in the second code cell of the IPython notebook.  
 
-I used the pandas library to calculate summary statistics of the traffic
+I used the numpy library to calculate summary statistics of the traffic
 signs data set:
 
-* The size of training set is ?
-* The size of test set is ?
-* The shape of a traffic sign image is ?
-* The number of unique classes/labels in the data set is ?
+* The size of training set is 34799 samples
+* The size of test set is 12630 samples
+* The shape of a traffic sign image is 32x32x3 (3 color planes of 32x32 pixels)
+* The number of unique classes/labels in the data set is 43
 
-####2. Include an exploratory visualization of the dataset and identify where the code is in your code file.
 
-The code for this step is contained in the third code cell of the IPython notebook.  
+The code for this step is contained in the X code cell of the IPython notebook.  
 
-Here is an exploratory visualization of the data set. It is a bar chart showing how the data ...
+One example of each class shown, with number of samples in the header
 
 ![alt text][image1]
 
+Without any additional analysis we can see, that the dataset is inbalanced, with number of samples of
+some classes over 2000 (2010 for speed limit 50), and for other signs very low (180 for speed limit 20).
+
+This distibution may be significant in a final product as a Bayesian prior of sign class, but for classification it is advisable to balance the dataset.
+
 ###Design and Test a Model Architecture
 
-####1. Describe how, and identify where in your code, you preprocessed the image data. What tecniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc.
+####1. Image pre-processing.
 
 The code for this step is contained in the fourth code cell of the IPython notebook.
 
-As a first step, I decided to convert the images to grayscale because ...
+I decided not to convert images to the grayscale. Such a convertion seems good for model size 
+and speed - but we certainly lose some valuable information.
+More than that, 'simple' RGB2GRAY conversion can be represented as one additional convolution layer
+with kernel size 1x1 and **fixed** (that means **not learnable**) coefficietns [0.299,0.587,0.114].
+If we are sure we need, we can place such a 1x1 convolution layer at the begining of our
+network - and **learn** coefficietns optimal for our task. 
 
-Here is an example of a traffic sign image before and after grayscaling.
-
-![alt text][image2]
 
 As a last step, I normalized the image data because ...
 
