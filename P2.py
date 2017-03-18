@@ -243,7 +243,38 @@ def augmentImage(img, N:int):
         z = np.random.uniform(rangeZ[0], rangeZ[1]);
         out.append(transformImg(img,x,y,z));
     return out;
+#%%
 
+#per-channel normalization
+def normalizeImageC(img):
+        imf = np.float32(img);
+        for chan in range(img.shape[2]):
+            imf[:,:,chan] = imf[:,:,chan] - np.min(imf[:,:,chan]);
+            mx = np.max(imf[:,:,chan]);
+            if (mx > 0):
+                imf[:,:,chan] = imf[:,:,chan] / mx;
+            imf[:,:,chan] = imf[:,:,chan] - 0.5;
+        return imf;
+
+
+#global normalization
+def normalizeImageG(img):
+        imf = np.float32(img);
+        imf = imf - np.min(imf);
+        mx = np.max(imf);
+        if (mx > 0):
+            imf = imf / np.max(imf);
+        imf = imf - 0.5;
+        return imf;
+    
+#%%    
+
+def normalizeImageList(imgList):
+    shape = list(imgList.shape);
+    out = np.array([normalizeImageC(img) for img in imgList]);
+    return out;
+    
+    
 #%%    
 #build new list of N images    
 def augmentImgList(imgList, outOrN ):
@@ -266,11 +297,6 @@ def augmentImgList(imgList, outOrN ):
     l = 0
     for  img in imgList:
         imf = np.float32(img);
-        imf = imf - np.min(imf)
-        mx = np.max(imf)
-        if (mx > 0):
-            imf = imf / np.max(imf)
-        imf = imf - 0.5
         cf = np.int((outLen-k)/(inputLen-l)) + 1;
         if (cf > 1):
             newImages = augmentImage(imf, cf);
@@ -298,10 +324,16 @@ targetY = np.empty(targetXShape[0], dtype = np.uint8);
                  
 for signClass in range(n_classes):
     print("filling class ", signClass);
-    inputImages = X_train[indexes[signClass]];
+    inputImages = Xgn_train[indexes[signClass]];
     augmentImgList(inputImages, targetX[signClass*targetCount:(signClass+1)*targetCount]);
     targetY[signClass*targetCount:(signClass+1)*targetCount] = signClass;
 
+idx = np.arange(totalLen);
+np.random.shuffle(idx);
+    #shuffle
+targetY = targetY[idx];
+targetX = targetX[idx];
+                
 #%%
 targetXvShape = list(X_valid.shape);
 
@@ -321,12 +353,7 @@ for img in X_valid:
 #%%    
 #shuffling X and Y arrays:
     # prepare index
-idx = np.arange(totalLen);
-np.random.shuffle(idx);
-    #shuffle
-targetY = targetY[idx];
-targetX = targetX[idx];
-    
+
 targetTrain = {'features': targetX, 'labels': targetY}
 #pickle.dump(targetTrain, open( "../data/Signs/trainAugmented.p", "wb" ) )
 
