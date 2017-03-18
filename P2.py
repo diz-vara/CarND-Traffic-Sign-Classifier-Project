@@ -270,7 +270,7 @@ def augmentImgList(imgList, outOrN ):
         mx = np.max(imf)
         if (mx > 0):
             imf = imf / np.max(imf)
-        #imf = imf - 0.5
+        imf = imf - 0.5
         cf = np.int((outLen-k)/(inputLen-l)) + 1;
         if (cf > 1):
             newImages = augmentImage(imf, cf);
@@ -302,6 +302,21 @@ for signClass in range(n_classes):
     augmentImgList(inputImages, targetX[signClass*targetCount:(signClass+1)*targetCount]);
     targetY[signClass*targetCount:(signClass+1)*targetCount] = signClass;
 
+#%%
+targetXvShape = list(X_valid.shape);
+
+targetXv = np.empty(targetXvShape,dtype = np.float32);
+            
+k = 0;     
+for img in X_valid:
+        imf = np.float32(img);
+        imf = imf - np.min(imf)
+        mx = np.max(imf)
+        if (mx > 0):
+            imf = imf / np.max(imf)
+        imf = imf - 0.5
+        targetXv[k] = imf;
+        k = k+1   
 
 #%%    
 #shuffling X and Y arrays:
@@ -313,7 +328,7 @@ targetY = targetY[idx];
 targetX = targetX[idx];
     
 targetTrain = {'features': targetX, 'labels': targetY}
-pickle.dump(targetTrain, open( "../data/Signs/trainAugmented.p", "wb" ) )
+#pickle.dump(targetTrain, open( "../data/Signs/trainAugmented.p", "wb" ) )
 
 
 
