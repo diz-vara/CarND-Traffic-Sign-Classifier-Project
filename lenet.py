@@ -18,7 +18,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 from tensorflow.contrib.layers import flatten
 
 
-EPOCHS = 50
+EPOCHS = 40
 BATCH_SIZE = 50
 
 
@@ -74,7 +74,7 @@ def LeNet(x):
 
 x = targetX; #np.float32(X_train);
 y = targetY;
-xval = targetXv; #np.float32(X_valid);
+xval = Xgn_valid; #np.float32(X_valid);
 yval = y_valid;
 
 
