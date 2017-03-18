@@ -72,9 +72,9 @@ def LeNet(x):
     return logits
 #%%
 
-x = np.float32(X_train);
-y = y_train;
-xval = np.float32(X_valid);
+x = targetX; #np.float32(X_train);
+y = targetY;
+xval = targetXv; #np.float32(X_valid);
 yval = y_valid;
 
 
@@ -88,7 +88,7 @@ fc2 = LeNet(batch_x)
 step = tf.Variable(0, trainable=False)
 starter_learning_rate = 2e-3
 learning_rate = tf.train.exponential_decay(starter_learning_rate, step, 
-                                           10, 0.998, staircase=True)
+                                           500, 0.998, staircase=True)
                                            
 
 loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=ohy))
