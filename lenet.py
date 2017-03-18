@@ -18,7 +18,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 from tensorflow.contrib.layers import flatten
 
 
-EPOCHS = 10
+EPOCHS = 50
 BATCH_SIZE = 50
 
 
@@ -74,23 +74,31 @@ def LeNet(x):
 
 x = np.float32(X_train);
 y = y_train;
-ohy = tf.one_hot(y_train,43);
+xval = np.float32(X_valid);
+yval = y_valid;
+
 
 #sigs are 32x32x3
 batch_x = tf.placeholder(tf.float32, [None,32,32,3])
 # 32 types
-batch_y = tf.placeholder(tf.float32, (None))
-fc2 = LeNet(x)
+batch_y = tf.placeholder(tf.int32, (None))
+ohy = tf.one_hot(batch_y,43);
+fc2 = LeNet(batch_x)
+
+step = tf.Variable(0, trainable=False)
+starter_learning_rate = 2e-3
+learning_rate = tf.train.exponential_decay(starter_learning_rate, step, 
+                                           10, 0.998, staircase=True)
+                                           
 
 loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=ohy))
-opt = tf.train.AdamOptimizer(learning_rate = 2e-3)
-train_op = opt.minimize(loss_op)
-correct_prediction = tf.equal(tf.argmax(fc2, 1), tf.argmax(y, 1))
+opt = tf.train.AdamOptimizer(learning_rate)
+train_op = opt.minimize(loss_op, global_step = step)
+correct_prediction = tf.equal(tf.argmax(fc2, 1), tf.argmax(ohy, 1))
 accuracy_op = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 
 #%%
-BATCH_SIZE = 50
 
 def eval_data(xv, yv):
     """
@@ -103,7 +111,7 @@ def eval_data(xv, yv):
     # num_examples = 859 * 64 = 54976
     #
     # So in that case we go over 54976 examples instead of 55000.
-    steps_per_epoch = np.int(floor(xv.shape[0] // BATCH_SIZE))
+    steps_per_epoch = np.int(np.floor(xv.shape[0] // BATCH_SIZE))
     num_examples = steps_per_epoch * BATCH_SIZE
     total_acc, total_loss = 0, 0
     sess = tf.get_default_session()
@@ -136,12 +144,13 @@ with tf.Session() as sess:
             by = y[idx[batch_start:batch_start + BATCH_SIZE]]
 
             loss = sess.run(train_op, feed_dict={batch_x: bx, batch_y: by})
-            print ("Epoch ", "%4d" % i, " ,step ", "%4d" % step, " from ", "%4d" % steps_per_epoch, "\r");
+            #print ("Epoch ", "%4d" % i, " ,step ", "%4d" % step, " from ", "%4d" % steps_per_epoch, "\r");
 
-        val_loss, val_acc = val_loss, val_acc = eval_data(X_valid, y_valid)
+        val_loss, val_acc = eval_data(xval, yval)
         print("EPOCH {} ...".format(i+1))
         print("Validation loss = {:.3f}".format(val_loss))
         print("Validation accuracy = {:.3f}".format(val_acc))
+        print("Learning rate", "%.9f" % sess.run(learning_rate))
         print()
 
     # Evaluate on the test data
