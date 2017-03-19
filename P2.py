@@ -275,10 +275,12 @@ def normalizeImageC(img):
 #global normalization
 def normalizeImageG(img):
         imf = np.float32(img);
-        imf = imf - np.min(imf);
+        imf = imf - (np.min(imf)+20);
         mx = np.max(imf);
-        if (mx > 0):
-            imf = imf / np.max(imf);
+        if (mx > 20):
+            imf = imf / (mx-20);
+        elif mx > 0:
+            imf = imf / mx;
         imf = imf - 0.5;
         return imf;
     
@@ -362,9 +364,16 @@ def augmentImageList(X,Y,targetCount):
 Xgn_train = normalizeImageList(X_train,'G')
 Xgn_valid = normalizeImageList(X_valid,'G')
 
-(Xgn_t, Y_t) = augmentImageList(Xgn_train,y_train,4000)
-(Xgn_v, Y_v) = augmentImageList(Xgn_valid,y_valid,400)
+(Xgn_t, Yg_t) = augmentImageList(Xgn_train,y_train,4000)
+(Xgn_v, Yg_v) = augmentImageList(Xgn_valid,y_valid,400)
 
+#%%
+
+Xcn_train = normalizeImageList(X_train,'C')
+Xcn_valid = normalizeImageList(X_valid,'C')
+
+(Xcn_t, Yc_t) = augmentImageList(Xgn_train,y_train,4000)
+(Xcn_v, Yc_v) = augmentImageList(Xgn_valid,y_valid,400)
                 
 #%%
 targetXvShape = list(X_valid.shape);

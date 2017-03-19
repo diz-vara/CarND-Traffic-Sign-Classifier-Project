@@ -16,37 +16,6 @@ HINTS for layers:
 import tensorflow as tf
 from tensorflow.contrib.layers import flatten
 
-
-EPOCHS = 40
-BATCH_SIZE = 50
-
-
-x = Xgn_t; #np.float32(X_train);
-y = Y_t;
-xval = Xgn_v; #np.float32(X_valid);
-yval = Y_v;
-
-
-#sigs are 32x32x3
-batch_x = tf.placeholder(tf.float32, [None,32,32,3])
-# 32 types
-batch_y = tf.placeholder(tf.int32, (None))
-ohy = tf.one_hot(batch_y,43);
-fc2 = MixNet(batch_x)
-
-step = tf.Variable(0, trainable=False)
-starter_learning_rate = 2e-3
-learning_rate = tf.train.exponential_decay(starter_learning_rate, step, 
-                                           100, 0.998, staircase=True)
-                                           
-
-loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=ohy))
-opt = tf.train.AdamOptimizer(learning_rate)
-train_op = opt.minimize(loss_op, global_step = step)
-correct_prediction = tf.equal(tf.argmax(fc2, 1), tf.argmax(ohy, 1))
-accuracy_op = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-
 #%%
 
 def eval_data(xv, yv):
@@ -68,10 +37,43 @@ def eval_data(xv, yv):
         batch_start = step * BATCH_SIZE
         bx = xv[batch_start:batch_start + BATCH_SIZE]
         by = yv[batch_start:batch_start + BATCH_SIZE]
-        loss, acc = sess.run([loss_op, accuracy_op], feed_dict={batch_x : bx, batch_y: by})
+        loss, acc = sess.run([loss_op, accuracy_op], feed_dict={batch_x : bx, batch_y: by, keep_prob: 1.0})
         total_acc += (acc * bx.shape[0])
         total_loss += (loss * bx.shape[0])
     return total_loss/num_examples, total_acc/num_examples
+
+
+#%%
+EPOCHS = 75
+BATCH_SIZE = 100
+
+
+x = Xgn_t; #np.float32(X_train);
+y = Yg_t;
+xval = Xgn_valid; #np.float32(X_valid);
+yval = y_valid;
+
+keep_prob = tf.placeholder(tf.float32)                                           
+
+
+#sigs are 32x32x3
+batch_x = tf.placeholder(tf.float32, [None,32,32,3])
+# 32 types
+batch_y = tf.placeholder(tf.int32, (None))
+ohy = tf.one_hot(batch_y,43);
+fc2 = MixNet(batch_x)
+
+step = tf.Variable(0, trainable=False)
+starter_learning_rate = 1e-3
+learning_rate = tf.train.exponential_decay(starter_learning_rate, step, 
+                                           100, 0.998, staircase=True)
+
+
+loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=ohy))
+opt = tf.train.AdamOptimizer(learning_rate)
+train_op = opt.minimize(loss_op, global_step = step)
+correct_prediction = tf.equal(tf.argmax(fc2, 1), tf.argmax(ohy, 1))
+accuracy_op = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 
 
@@ -93,7 +95,7 @@ with tf.Session() as sess:
             bx = x[idx[batch_start:batch_start + BATCH_SIZE]]
             by = y[idx[batch_start:batch_start + BATCH_SIZE]]
 
-            loss = sess.run(train_op, feed_dict={batch_x: bx, batch_y: by})
+            loss = sess.run(train_op, feed_dict={batch_x: bx, batch_y: by, keep_prob: 0.5})
             #print ("Epoch ", "%4d" % i, " ,step ", "%4d" % step, " from ", "%4d" % steps_per_epoch, "\r");
 
         val_loss, val_acc = eval_data(xval, yval)
