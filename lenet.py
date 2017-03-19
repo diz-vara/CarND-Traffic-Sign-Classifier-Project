@@ -72,10 +72,10 @@ def LeNet(x):
     return logits
 #%%
 
-x = targetX; #np.float32(X_train);
-y = targetY;
-xval = Xgn_valid; #np.float32(X_valid);
-yval = y_valid;
+x = Xgn_t; #np.float32(X_train);
+y = Y_t;
+xval = Xgn_v; #np.float32(X_valid);
+yval = Y_v;
 
 
 #sigs are 32x32x3
@@ -129,6 +129,7 @@ def eval_data(xv, yv):
 
 #%%
     
+#config = tf.GPUOptions(per_process_gpu_memory_fraction = 0.7)
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     steps_per_epoch = np.int32(x.shape[0] // BATCH_SIZE)

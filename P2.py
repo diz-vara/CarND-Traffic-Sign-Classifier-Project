@@ -269,15 +269,19 @@ def normalizeImageG(img):
     
 #%%    
 
-def normalizeImageList(imgList):
-    shape = list(imgList.shape);
-    out = np.array([normalizeImageC(img) for img in imgList]);
+def normalizeImageList(imgList, mode = 'G'):
+    if (mode == 'C'):
+        print('Channel-wize normalization');
+        out = np.array([normalizeImageC(img) for img in imgList]);
+    else:
+        print('Global normalization');
+        out = np.array([normalizeImageG(img) for img in imgList]);
     return out;
     
     
 #%%    
 #build new list of N images    
-def augmentImgList(imgList, outOrN ):
+def augmentImgClass(imgList, outOrN ):
     shape = list(imgList.shape);
     inputLen = shape[0];
     if (type(outOrN) == int):
@@ -314,25 +318,38 @@ def augmentImgList(imgList, outOrN ):
         
                                 
 #%%
-targetCount = 4000;
-totalLen = targetCount * n_classes;
-targetXShape = list(X_train.shape);
-targetXShape[0] = totalLen; 
 
-targetX = np.empty(targetXShape,dtype = np.float32);
-targetY = np.empty(targetXShape[0], dtype = np.uint8);
-                 
-for signClass in range(n_classes):
-    print("filling class ", signClass);
-    inputImages = Xgn_train[indexes[signClass]];
-    augmentImgList(inputImages, targetX[signClass*targetCount:(signClass+1)*targetCount]);
-    targetY[signClass*targetCount:(signClass+1)*targetCount] = signClass;
+def augmentImageList(X,Y,targetCount):
+    indexes = [np.where(Y == i)[0] for i in range(n_classes)]
+    totalLen = targetCount * n_classes;
+    targetXShape = list(X.shape);
+    targetXShape[0] = totalLen; 
+    
+    targetX = np.empty(targetXShape,dtype = np.float32);
+    targetY = np.empty(targetXShape[0], dtype = np.uint8);
+                     
+    for signClass in range(n_classes):
+        print("filling class ", signClass);
+        inputImages = X[indexes[signClass]];
+        augmentImgClass(inputImages, targetX[signClass*targetCount:(signClass+1)*targetCount]);
+        targetY[signClass*targetCount:(signClass+1)*targetCount] = signClass;
 
-idx = np.arange(totalLen);
-np.random.shuffle(idx);
-    #shuffle
-targetY = targetY[idx];
-targetX = targetX[idx];
+    idx = np.arange(totalLen);
+    np.random.shuffle(idx);
+        #shuffle
+    targetY = targetY[idx];
+    targetX = targetX[idx];
+    
+    return (targetX, targetY);
+
+#%%
+
+Xgn_train = normalizeImageList(X_train,'G')
+Xgn_valid = normalizeImageList(X_valid,'G')
+
+(Xgn_t, Y_t) = augmentImageList(Xgn_train,y_train,4000)
+(Xgn_v, Y_v) = augmentImageList(Xgn_valid,y_valid,400)
+
                 
 #%%
 targetXvShape = list(X_valid.shape);
