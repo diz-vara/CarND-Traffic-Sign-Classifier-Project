@@ -13,13 +13,9 @@ HINTS for layers:
 
     tf.contrib.flatten
 """
+#%%
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
 from tensorflow.contrib.layers import flatten
-
-
-EPOCHS = 40
-BATCH_SIZE = 50
 
 
 # LeNet architecture:
@@ -70,90 +66,3 @@ def LeNet(x):
 
 
     return logits
-#%%
-
-x = Xgn_t; #np.float32(X_train);
-y = Y_t;
-xval = Xgn_v; #np.float32(X_valid);
-yval = Y_v;
-
-
-#sigs are 32x32x3
-batch_x = tf.placeholder(tf.float32, [None,32,32,3])
-# 32 types
-batch_y = tf.placeholder(tf.int32, (None))
-ohy = tf.one_hot(batch_y,43);
-fc2 = LeNet(batch_x)
-
-step = tf.Variable(0, trainable=False)
-starter_learning_rate = 2e-3
-learning_rate = tf.train.exponential_decay(starter_learning_rate, step, 
-                                           100, 0.998, staircase=True)
-                                           
-
-loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=ohy))
-opt = tf.train.AdamOptimizer(learning_rate)
-train_op = opt.minimize(loss_op, global_step = step)
-correct_prediction = tf.equal(tf.argmax(fc2, 1), tf.argmax(ohy, 1))
-accuracy_op = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-
-#%%
-
-def eval_data(xv, yv):
-    """
-    Given a dataset as input returns the loss and accuracy.
-    """
-    # If dataset.num_examples is not divisible by BATCH_SIZE
-    # the remainder will be discarded.
-    # Ex: If BATCH_SIZE is 64 and training set has 55000 examples
-    # steps_per_epoch = 55000 // 64 = 859
-    # num_examples = 859 * 64 = 54976
-    #
-    # So in that case we go over 54976 examples instead of 55000.
-    steps_per_epoch = np.int(np.floor(xv.shape[0] // BATCH_SIZE))
-    num_examples = steps_per_epoch * BATCH_SIZE
-    total_acc, total_loss = 0, 0
-    sess = tf.get_default_session()
-    for step in range(steps_per_epoch):
-        batch_start = step * BATCH_SIZE
-        bx = xv[batch_start:batch_start + BATCH_SIZE]
-        by = yv[batch_start:batch_start + BATCH_SIZE]
-        loss, acc = sess.run([loss_op, accuracy_op], feed_dict={batch_x : bx, batch_y: by})
-        total_acc += (acc * bx.shape[0])
-        total_loss += (loss * bx.shape[0])
-    return total_loss/num_examples, total_acc/num_examples
-
-
-
-
-#%%
-    
-#config = tf.GPUOptions(per_process_gpu_memory_fraction = 0.7)
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
-    steps_per_epoch = np.int32(x.shape[0] // BATCH_SIZE)
-    num_examples = steps_per_epoch * BATCH_SIZE
-
-    idx = np.arange(x.shape[0])
-    # Train model
-    for i in range(EPOCHS):
-        np.random.shuffle(idx)
-        for step in range(steps_per_epoch):
-            batch_start = step * BATCH_SIZE
-            bx = x[idx[batch_start:batch_start + BATCH_SIZE]]
-            by = y[idx[batch_start:batch_start + BATCH_SIZE]]
-
-            loss = sess.run(train_op, feed_dict={batch_x: bx, batch_y: by})
-            #print ("Epoch ", "%4d" % i, " ,step ", "%4d" % step, " from ", "%4d" % steps_per_epoch, "\r");
-
-        val_loss, val_acc = eval_data(xval, yval)
-        print("EPOCH {} ...".format(i+1))
-        print("Validation loss = {:.3f}".format(val_loss))
-        print("Validation accuracy = {:.3f}".format(val_acc))
-        print("Learning rate", "%.9f" % sess.run(learning_rate))
-        print()
-
-    # Evaluate on the test data
-
-
