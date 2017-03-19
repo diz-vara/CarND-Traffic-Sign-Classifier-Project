@@ -32,7 +32,7 @@ batch_x = tf.placeholder(tf.float32, [None,32,32,3])
 # 32 types
 batch_y = tf.placeholder(tf.int32, (None))
 ohy = tf.one_hot(batch_y,43);
-fc2 = LeNet(batch_x)
+fc2 = MixNet(batch_x)
 
 step = tf.Variable(0, trainable=False)
 starter_learning_rate = 2e-3
