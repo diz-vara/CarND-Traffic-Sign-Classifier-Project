@@ -13,6 +13,7 @@ MixNet Architecture
 #%%
 import tensorflow as tf
 from tensorflow.contrib.layers import flatten
+from tensorflow.contrib.layers import batch_norm
 
 
 # MixNet architecture:
@@ -49,13 +50,14 @@ def MixNet(x):
     c2 = tf.nn.conv2d(c1,w21, strides = [1,1,1,1], padding='VALID') + b21
     c2 = tf.nn.relu(c2)
     
-    #12x12x16 -> 10x10x32
+    
+    #12x12x16 -> 10x10x64
     w22 = tf.Variable(tf.truncated_normal((3,3,16,64),0,0.1))
     b22 = tf.Variable(tf.truncated_normal([64],0,0.01))
     
     c2 = tf.nn.conv2d(c2,w22, strides = [1,1,1,1], padding='VALID') + b22
     
-    #10x10x32 -> 5x5x32
+    #10x10x64 -> 5x5x64
     c2 = tf.nn.max_pool(c2, (1,2,2,1), (1,2,2,1), padding='VALID')
     c2 = tf.nn.relu(c2)
     #5X5X32->800
