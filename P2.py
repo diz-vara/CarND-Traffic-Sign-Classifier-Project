@@ -262,26 +262,21 @@ def augmentImage(img, N:int):
 
 #per-channel normalization
 def normalizeImageC(img):
-        imf = np.float32(img);
+        imf = np.float32(img); #cv2.cvtColor(img,cv2.COLOR_RGB2Lab));
+        mn = np.mean(np.mean(imf[5:25][5:25],0),0);
+        s = np.max(np.max(imf[5:25][5:25],0),0) - np.min(np.min(imf[5:25][5:25],0),0) + 10;
         for chan in range(img.shape[2]):
-            imf[:,:,chan] = imf[:,:,chan] - np.min(imf[:,:,chan]);
-            mx = np.max(imf[:,:,chan]);
-            if (mx > 0):
-                imf[:,:,chan] = imf[:,:,chan] / mx;
-            imf[:,:,chan] = imf[:,:,chan] - 0.5;
+            imf[:,:,chan] = imf[:,:,chan] - mn[chan];
+            imf[:,:,chan] = imf[:,:,chan] / s[chan];
         return imf;
 
 
 #global normalization
 def normalizeImageG(img):
         imf = np.float32(img);
-        imf = imf - (np.min(imf)+20);
-        mx = np.max(imf);
-        if (mx > 20):
-            imf = imf / (mx-20);
-        elif mx > 0:
-            imf = imf / mx;
-        imf = imf - 0.5;
+        imf = imf - np.median(imf[5:25][5:25])
+        s = np.max(imf[5:25][5:25]) - np.min(imf[5:25][5:25])
+        imf = imf / (s + 10)
         return imf;
     
 #%%    
@@ -317,7 +312,9 @@ def augmentImgClass(imgList, outOrN ):
     k = 0
     l = 0
     for  img in imgList:
-        imf = np.float32(img);
+        shift = int(np.random.uniform(-50,50));
+        img = cv2.add(img,shift);
+        imf = normalizeImageG(img);
         cf = np.int((outLen-k)/(inputLen-l)) + 1;
         if (cf > 1):
             newImages = augmentImage(imf, cf);
@@ -361,19 +358,19 @@ def augmentImageList(X,Y,targetCount):
 
 #%%
 
-Xgn_train = normalizeImageList(X_train,'G')
+#Xgn_train = normalizeImageList(X_train,'G')
 Xgn_valid = normalizeImageList(X_valid,'G')
 
-(Xgn_t, Yg_t) = augmentImageList(Xgn_train,y_train,4000)
-(Xgn_v, Yg_v) = augmentImageList(Xgn_valid,y_valid,400)
+(Xgn_t, Yg_t) = augmentImageList(X_train,y_train,5000)
+#(Xgn_v, Yg_v) = augmentImageList(Xgn_valid,y_valid,400)
 
 #%%
 
 Xcn_train = normalizeImageList(X_train,'C')
 Xcn_valid = normalizeImageList(X_valid,'C')
 
-(Xcn_t, Yc_t) = augmentImageList(Xgn_train,y_train,4000)
-(Xcn_v, Yc_v) = augmentImageList(Xgn_valid,y_valid,400)
+(Xcn_t, Yc_t) = augmentImageList(Xcn_train,y_train,4000)
+#(Xcn_v, Yc_v) = augmentImageList(Xcn_valid,y_valid,400)
                 
 #%%
 targetXvShape = list(X_valid.shape);
@@ -383,11 +380,9 @@ targetXv = np.empty(targetXvShape,dtype = np.float32);
 k = 0;     
 for img in X_valid:
         imf = np.float32(img);
-        imf = imf - np.min(imf)
-        mx = np.max(imf)
-        if (mx > 0):
-            imf = imf / np.max(imf)
-        imf = imf - 0.5
+        imf = imf - np.median(imf[5:25][5:25])
+        s = np.max(imf[5:25][5:25]) - np.min(imf[5:25][5:25])
+        imf = imf / (s + 10)
         targetXv[k] = imf;
         k = k+1   
 

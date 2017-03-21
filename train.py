@@ -44,7 +44,7 @@ def eval_data(xv, yv):
 
 
 #%%
-EPOCHS = 75
+EPOCHS = 100
 BATCH_SIZE = 100
 
 
@@ -66,7 +66,7 @@ fc2 = MixNet(batch_x)
 step = tf.Variable(0, trainable=False)
 starter_learning_rate = 1e-3
 learning_rate = tf.train.exponential_decay(starter_learning_rate, step, 
-                                           100, 0.998, staircase=True)
+                                          100, 0.998, staircase=True)
 
 
 loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=ohy))
@@ -75,7 +75,7 @@ train_op = opt.minimize(loss_op, global_step = step)
 correct_prediction = tf.equal(tf.argmax(fc2, 1), tf.argmax(ohy, 1))
 accuracy_op = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-
+saver = tf.train.Saver();
 
 
 #%%
@@ -88,6 +88,7 @@ with tf.Session() as sess:
 
     idx = np.arange(x.shape[0])
     # Train model
+    loss = 0
     for i in range(EPOCHS):
         np.random.shuffle(idx)
         for step in range(steps_per_epoch):
@@ -95,15 +96,17 @@ with tf.Session() as sess:
             bx = x[idx[batch_start:batch_start + BATCH_SIZE]]
             by = y[idx[batch_start:batch_start + BATCH_SIZE]]
 
-            loss = sess.run(train_op, feed_dict={batch_x: bx, batch_y: by, keep_prob: 0.5})
+            _,loss = sess.run([train_op, loss_op], feed_dict={batch_x: bx, batch_y: by, keep_prob: 0.5})
             #print ("Epoch ", "%4d" % i, " ,step ", "%4d" % step, " from ", "%4d" % steps_per_epoch, "\r");
 
         val_loss, val_acc = eval_data(xval, yval)
         print("EPOCH {} ...".format(i+1))
-        print("Validation loss = {:.3f}".format(val_loss))
+        print("Validation loss = {:.3f}".format(val_loss), "Train loss = {:.5f}".format(loss))
         print("Validation accuracy = {:.3f}".format(val_acc))
         print("Learning rate", "%.9f" % sess.run(learning_rate))
         print()
+    
+    saver.save(sess,save_file)    
 
     # Evaluate on the test data
 
