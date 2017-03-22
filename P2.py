@@ -274,7 +274,7 @@ def normalizeImageC(img):
 #global normalization
 def normalizeImageG(img):
         imf = np.float32(img);
-        imf = imf - np.median(imf[5:25][5:25])
+        imf = imf - np.mean(imf[5:25][5:25])
         s = np.max(imf[5:25][5:25]) - np.min(imf[5:25][5:25])
         imf = imf / (s + 1)
         return imf;
@@ -312,12 +312,9 @@ def augmentImgClass(imgList, outOrN ):
     k = 0
     l = 0
     for  img in imgList:
-        shift = int(np.random.uniform(-50,50));
-        img = cv2.add(img,shift);
-        imf = normalizeImageG(img);
         cf = np.int((outLen-k)/(inputLen-l)) + 1;
         if (cf > 1):
-            newImages = augmentImage(imf, cf);
+            newImages = augmentImage(img, cf);
             l = l+1;
             for imNew in newImages:
                 if (k < outLen):
@@ -344,7 +341,7 @@ def augmentImageList(X,Y,targetCount):
                      
     for signClass in range(n_classes):
         print("filling class ", signClass);
-        inputImages = X[indexes[signClass]];
+        inputImages = X[indicies[signClass]];
         augmentImgClass(inputImages, targetX[signClass*targetCount:(signClass+1)*targetCount]);
         targetY[signClass*targetCount:(signClass+1)*targetCount] = signClass;
 
@@ -373,6 +370,36 @@ Xcn_valid = normalizeImageList(X_valid,'C')
 #(Xcn_v, Yc_v) = augmentImageList(Xcn_valid,y_valid,400)
                 
 #%%
+#merge train and validation sets
+X = np.append(X_train, X_valid,0);
+Y = np.append(y_train, y_valid,0);
+
+totalLen = Y.shape[0];
+#shuffle data
+idx = np.arange(totalLen);
+np.random.shuffle(idx);
+X = X[idx];
+Y = Y[idx];
+
+#normalize all images
+Xgn = normalizeImageList(X);
+Xgn_test = normalizeImageList(X_test);
+n_classes = len(np.unique(Y))
+#build list of class indicies lists
+classIndicies = [np.where(Y == i)[0] for i in range(n_classes)]
+
+#split merged set (10% for test)
+idxDevTest,idxDev = splitIndicies(classIndicies,10);
+
+#shuffle idxDev once more
+np.random.shuffle(idxDev)
+
+#buld dev class indicies
+devIndicies = [idxDev[np.where(Y[idxDev] == i)[0]] for i in range(n_classes)]
+
+
+
+
 
 
 

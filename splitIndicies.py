@@ -23,15 +23,8 @@ def splitIndicies (Index, percent,step=0):
         out1 = np.append(out1,o0);
         out1 = np.append(out1,o2);
 
+    np.random.shuffle(out0);
+    np.random.shuffle(out1);
     return out0, out1
     
 
-classIndicies = [np.where(Y == i)[0] for i in range(n_classes)];
-idxDevTest,idxDev = splitIndicies(classIndicies,10);
-
-np.random.shuffle(idxDev);
-
-devIndicies = [idxDev[np.where(Y[idxDev] == i)[0]] for i in range(n_classes)]
-
-
-idxVal,idxTrn = splitIndicies(devIndicies,10,step)
