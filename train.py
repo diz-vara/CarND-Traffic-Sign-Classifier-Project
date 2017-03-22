@@ -84,8 +84,8 @@ with tf.Session() as sess:
 
     loss = 0
 
-    s_val_loss = 0;
-    s_val_acc = 0;
+    s_val_loss = [];
+    s_val_acc = [];
     
     for fold in range(FOLDS):
         sess.run(tf.global_variables_initializer())
