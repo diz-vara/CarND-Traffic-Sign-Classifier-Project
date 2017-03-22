@@ -98,8 +98,8 @@ print("Number of classes =", n_classes)
 
 #count number of each class examples
 #and store the index of the last one
-indexes = [np.where(y_train == i)[0] for i in range(n_classes)]
-counts = [np.size(array) for array in indexes]
+classIndicies = [np.where(Y == i)[0] for i in range(n_classes)]
+classCounts = [np.size(array) for array in classIndicies]
 
 
 #%%
@@ -276,7 +276,7 @@ def normalizeImageG(img):
         imf = np.float32(img);
         imf = imf - np.median(imf[5:25][5:25])
         s = np.max(imf[5:25][5:25]) - np.min(imf[5:25][5:25])
-        imf = imf / (s + 10)
+        imf = imf / (s + 1)
         return imf;
     
 #%%    
@@ -334,7 +334,7 @@ def augmentImgClass(imgList, outOrN ):
 #%%
 
 def augmentImageList(X,Y,targetCount):
-    indexes = [np.where(Y == i)[0] for i in range(n_classes)]
+    indicies = [np.where(Y == i)[0] for i in range(n_classes)]
     totalLen = targetCount * n_classes;
     targetXShape = list(X.shape);
     targetXShape[0] = totalLen; 
@@ -373,25 +373,6 @@ Xcn_valid = normalizeImageList(X_valid,'C')
 #(Xcn_v, Yc_v) = augmentImageList(Xcn_valid,y_valid,400)
                 
 #%%
-targetXvShape = list(X_valid.shape);
-
-targetXv = np.empty(targetXvShape,dtype = np.float32);
-            
-k = 0;     
-for img in X_valid:
-        imf = np.float32(img);
-        imf = imf - np.median(imf[5:25][5:25])
-        s = np.max(imf[5:25][5:25]) - np.min(imf[5:25][5:25])
-        imf = imf / (s + 10)
-        targetXv[k] = imf;
-        k = k+1   
-
-#%%    
-#shuffling X and Y arrays:
-    # prepare index
-
-targetTrain = {'features': targetX, 'labels': targetY}
-#pickle.dump(targetTrain, open( "../data/Signs/trainAugmented.p", "wb" ) )
 
 
 
