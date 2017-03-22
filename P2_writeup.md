@@ -1,4 +1,4 @@
-#**Traffic Sign Recognition** 
+**Traffic Sign Recognition** 
 
 
 ---
@@ -26,16 +26,16 @@ The goals / steps of this project are the following:
 [image8]: ./examples/placeholder.png "Traffic Sign 5"
 
 ## Rubric Points
-###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
+### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
 
 ---
-###Writeup / README
+### Writeup / README
 
-####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf. You can use this template as a guide for writing the report. The submission includes the project code.
+#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf. You can use this template as a guide for writing the report. The submission includes the project code.
 
 You're reading it! and here is a link to my [project code](https://github.com/diz-vara/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
 
-###Data Set Summary & Exploration
+### Data Set Summary & Exploration
 
 
 The code for this step is contained in the second code cell of the IPython notebook.  
@@ -60,9 +60,9 @@ some classes over 2000 (2010 for speed limit 50), and for other signs very low (
 
 This distibution may be significant in a final product as a Bayesian prior of sign class, but for classification it is advisable to balance the dataset.
 
-###Design and Test a Model Architecture
+### Design and Test a Model Architecture
 
-####1. Image pre-processing.
+#### 1. Image pre-processing.
 
 The code for this step is contained in the fourth code cell of the IPython notebook.
 
@@ -74,9 +74,36 @@ If we are sure we need, we can place such a 1x1 convolution layer at the beginin
 network - and **learn** coefficietns optimal for our task. 
 
 
-As a last step, I normalized the image data because ...
+Image normalization seems to be reasonable (but not necessary) step, because basically ANN performs linear 
+operations that are sensitive to the mean and variation of the input variable.
+Ususal practice is to normalize color channels separately (substracting channel mean and dividing by std or range).
+But this approach may distort original color balance of the image. It may be good for removing color cast from red
+sunset or blue night shots - but in case of this dataset it can affect recognition of red ('STOP') and blue road signs.
+Therefore, I prefered 'global normalization' - removing mean value of the image and dividing by total range.
 
-####2. Describe how, and identify where in your code, you set up training, validation and testing data. How much data was in each set? Explain what techniques were used to split the data into these sets. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, identify where in your code, and provide example images of the additional data)
+The main preprocessing step is the image set augmentation. I decided to add variants with distortions that we can
+expect in real situaion (detecting sing from the moving vehicle) - motion blur and perspective transformation 
+(corresponding to the object rotation in a 3D-space).
+
+I decided to:
+- balance dataset (equal number of images in each class);
+- add some distortions even to the classes with large number of images.
+
+I decided to extend dataset up to 4000 images per class (172000 training images). Only train set was augmened.
+In case of cross-validation, augmentation was performed after splitting dataset into train and validation folds.
+
+(*If you want to get a **very good** validation results, you may augment your dataset by a factor of 10 - and then
+split it into train and validation set: most of the validation data will be just a variant of training images,
+you'll get very good validation accuracy - but poor resuts for test and for real-world usage of your net.*)
+
+
+For each new image were chosen randomly:
+	- motion blur: no motion (60%), moderate blur with 3x3 kernel (30%), strong blur with 5x5 kernel (10%)
+	- rotation aroun X (horizontal) axis: 
+
+
+
+#### 2. Dataset organization. 
 
 The code for splitting the data into training and validation sets is contained in the fifth code cell of the IPython notebook.  
 
