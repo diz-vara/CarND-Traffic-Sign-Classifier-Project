@@ -75,7 +75,7 @@ saver = tf.train.Saver();
 
 #%%
     
-FOLDS = 5;
+FOLDS = 10;
 #config = tf.GPUOptions(per_process_gpu_memory_fraction = 0.7)
 with tf.Session() as sess:
 
@@ -84,8 +84,8 @@ with tf.Session() as sess:
 
     loss = 0
 
-    sum_val_loss = 0;
-    sum_val_acc = 0;
+    s_val_loss = 0;
+    s_val_acc = 0;
     
     for fold in range(FOLDS):
         sess.run(tf.global_variables_initializer())
@@ -113,11 +113,11 @@ with tf.Session() as sess:
             print("Validation accuracy = {:.3f}".format(val_acc), " Learning rate", "%.9f" % sess.run(learning_rate))
             print()
     
-        sum_val_loss = sum_val_loss + val_loss;
-        sum_val_acc = sum_val_acc + val_acc;
-        print("average loss = {:.5f}".format(sum_val_loss/(fold+1)), "average accuracy = {:.5f}".format(sum_val_acc/(fold+1)))
+        s_val_loss.append(val_loss);
+        s_val_acc.append(val_acc);
+        print("average loss = {:.5f}".format(sum(s_val_loss)/len(s_val_loss)), "average accuracy = {:.5f}".format(sum(s_val_acc)/len(s_val_acc)))
 
-    print("average loss = {:.5f}".format(sum_val_loss/(fold+1)), "average accuracy = {:.5f}".format(sum_val_acc/(fold+1)))
+    print("average loss = {:.5f}".format(sum(s_val_loss)/len(s_val_loss)), "average accuracy = {:.5f}".format(sum(s_val_acc)/len(s_val_acc)))
     saver.save(sess,save_file)    
 
     # Evaluate on the test data

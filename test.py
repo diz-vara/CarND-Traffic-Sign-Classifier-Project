@@ -40,6 +40,7 @@ def test_data(xv, yv):
 
 
 #%%
+print ("testing " , save_file)
 
 with tf.Session() as sess:
     #sess.run(tf.global_variables_initializer())
