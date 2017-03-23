@@ -1,0 +1,25 @@
+MixNet_0
+
+Validation loss = 0.014 Validation accuracy = 0.997
+Train loss (drop) = 0.00262 Train loss = 0.00004 Train acc  = 1.00000
+
+Test loss = 0.256 Test accuracy = 0.961
+
+train on all data:
+Validation loss = 0.267 Validation accuracy = 0.960
+Train loss (drop) = 0.01381 Train loss = 0.00054 Train acc  = 0.99988
+
+
+
+
+MixNet_conv
+
+
+Validation loss = 0.025 Validation accuracy = 0.995
+Train loss (drop) = 0.00158 Train loss = 0.00050 Train acc  = 0.99986
+
+Test loss = 0.284 Test accuracy = 0.958
+
+after training on all data:
+
+Test loss = 0.212 Test accuracy = 0.962
