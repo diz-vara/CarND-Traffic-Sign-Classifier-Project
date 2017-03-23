@@ -91,7 +91,7 @@ def MixNet(x):
     b32 = tf.Variable(tf.truncated_normal([32],0,0.01),'b32')
 
     c3 = tf.nn.conv2d(c3,w32, strides = [1,1,1,1], padding='VALID') + b32
-    c3 = tf.nn.relu(c3)
+    c3 = tf.nn.tanh(c3)
     #1X256 -> 256
     flat3 = flatten(c3);    
     print("layer3 :",c3.get_shape(),"; flattened=", flat3.get_shape())
@@ -103,14 +103,14 @@ def MixNet(x):
     print("lin1 shape:",lin1.get_shape(), lin1len)
 
     #1568+800+128
-    wl1 = tf.Variable(tf.truncated_normal((lin1len,120),0,s),'wl1')
+    wl1 = tf.Variable(tf.truncated_normal((lin1len,120),0,s/10),'wl1')
     bl1 = tf.Variable(tf.truncated_normal([120],0,0.001),'bl1')
 
     lin1 = tf.nn.dropout(lin1, keep_prob)
     lin1 = tf.matmul(lin1,wl1) + bl1
-    lin1 = tf.nn.relu(lin1)
+    lin1 = tf.nn.tanh(lin1)
     
-    wl2 = tf.Variable(tf.truncated_normal((120,43),0,s),'wl2')
+    wl2 = tf.Variable(tf.truncated_normal((120,43),0,s/10),'wl2')
     bl2 = tf.Variable(tf.truncated_normal([43],0,0.001),'bl2')
 
     lin2 = tf.matmul(lin1,wl2) + bl2

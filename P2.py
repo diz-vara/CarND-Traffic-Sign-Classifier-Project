@@ -263,8 +263,8 @@ def augmentImage(img, N:int):
 #per-channel normalization
 def normalizeImageC(img):
         imf = np.float32(img); #cv2.cvtColor(img,cv2.COLOR_RGB2Lab));
-        mn = np.mean(np.mean(imf[5:25][5:25],0),0);
-        s = np.max(np.max(imf[5:25][5:25],0),0) - np.min(np.min(imf[5:25][5:25],0),0) + 10;
+        mn = np.mean(np.mean(imf[5:27][5:27],0),0);
+        s = np.max(np.max(imf[5:27][5:27],0),0) - np.min(np.min(imf[5:27][5:27],0),0) + 10;
         for chan in range(img.shape[2]):
             imf[:,:,chan] = imf[:,:,chan] - mn[chan];
             imf[:,:,chan] = imf[:,:,chan] / s[chan];
@@ -274,8 +274,8 @@ def normalizeImageC(img):
 #global normalization
 def normalizeImageG(img):
         imf = np.float32(img);
-        imf = imf - np.mean(imf[5:25][5:25])
-        s = np.max(imf[5:25][5:25]) - np.min(imf[5:25][5:25])
+        imf = imf - np.mean(imf[5:27][5:27])
+        s = np.max(imf[5:27][5:27]) - np.min(imf[5:27][5:27])
         imf = imf / (s + 1)
         return imf;
     

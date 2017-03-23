@@ -113,8 +113,11 @@ def MixNet(x):
     bl1 = tf.Variable(tf.truncated_normal([100],0,0.001),'bl1')
 
     lin1 = tf.nn.dropout(lin1, keep_prob)
+
     lin1 = tf.matmul(lin1,wl1) + bl1
     lin1 = tf.nn.tanh(lin1)
+
+    lin1 = tf.nn.dropout(lin1, keep_prob)
     
     wl2 = tf.Variable(tf.truncated_normal((100,43),0,s),'wl2')
     bl2 = tf.Variable(tf.truncated_normal([43],0,0.001),'bl2')
