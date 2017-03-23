@@ -224,10 +224,16 @@ def getPerspMatrix(x, y, z, size):
 
 
 
-def transformImg(img, x=0, y=0, z=0):
+def transformImg(img, x=0, y=0, z=0, scale = 1):
     size = img.shape[:2]
     
     M = getPerspMatrix(x, y, z, size)
+    if scale != 1:
+        S = np.eye(3);
+        S[0,0] = S[1,1] = scale;
+        S[0,2] = size[0]/2 * (1-scale);
+        S[1,2] = size[1]/2 * (1-scale);
+        M = np.matmul(S,M);
 
     result = cv2.warpPerspective(img, M, size, borderMode=cv2.BORDER_REFLECT)
 
@@ -240,15 +246,17 @@ def augmentImage(img, N:int):
     
     out = [img];
 
-    rangeX = [-20, 0];
-    rangeY = [-20, 20];
+    rangeX = [  0, 20];
+    rangeY = [-35, 35];
     rangeZ = [-15, 15];
+    rangeS = [0.8, 1.2]
 
 
     for i in range(N-1):
         x = np.random.uniform(rangeX[0], rangeX[1]);
         y = np.random.uniform(rangeY[0], rangeY[1]);
         z = np.random.uniform(rangeZ[0], rangeZ[1]);
+        scale = np.random.uniform(rangeS[0], rangeS[1]);
         motion = np.random.uniform();
         if motion > 0.9:
             tmp = cv2.filter2D(img,-1,motion_kern5);
@@ -256,7 +264,7 @@ def augmentImage(img, N:int):
             tmp = cv2.filter2D(img,-1,motion_kern3);
         else:
             tmp = img;
-        out.append(transformImg(tmp,x,y,z));
+        out.append(transformImg(tmp,x,y,z,scale));
     return out;
 #%%
 
