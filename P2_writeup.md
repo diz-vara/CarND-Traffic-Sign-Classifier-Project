@@ -3,23 +3,14 @@
 
 ---
 
-**Build a Traffic Sign Recognition Project**
-
-The goals / steps of this project are the following:
-* Load the data set (see below for links to the project data set)
-* Explore, summarize and visualize the data set
-* Design, train and test a model architecture
-* Use the model to make predictions on new images
-* Analyze the softmax probabilities of the new images
-* Summarize the results with a written report
 
 
 [//]: # (Image References)
 
 [image1]: ./classes.png "Sign classes"
-[image2]: ./examples/grayscale.jpg "Grayscaling"
-[image3]: ./examples/random_noise.jpg "Random Noise"
-[image4]: ./examples/placeholder.png "Traffic Sign 1"
+[image2]: ./motionBlur.png "Motion blur"
+[image3]: ./rotations.png "Rotations"
+[image4]: ./errors.png "errors"
 [image5]: ./examples/placeholder.png "Traffic Sign 2"
 [image6]: ./examples/placeholder.png "Traffic Sign 3"
 [image7]: ./examples/placeholder.png "Traffic Sign 4"
@@ -43,7 +34,7 @@ The code for this step is contained in the second code cell of the IPython noteb
 I used the numpy library to calculate summary statistics of the traffic
 signs data set:
 
-* The size of training set is 34799 samples
+* The size of training set is 34799 samples (39209 samples including validation)
 * The size of test set is 12630 samples
 * The shape of a traffic sign image is 32x32x3 (3 color planes of 32x32 pixels)
 * The number of unique classes/labels in the data set is 43
@@ -98,29 +89,84 @@ you'll get very good validation accuracy - but poor resuts for test and for real
 
 
 For each new image were chosen randomly:
-	- motion blur: no motion (60%), moderate blur with 3x3 kernel (30%), strong blur with 5x5 kernel (10%)
-	- rotation aroun X (horizontal) axis: 
+- motion blur: no motion (60%), moderate blur with 3x3 kernel (30%), strong blur with 5x5 kernel (10%)
+- rotation around X (horizontal) axis: [0° 20°] (20° corresponds to the sign seen from below: it makes no sense to use negative angles,
+	as normally we do not observe signs from above);
+- rotation around Y (vertical) axis: [-20°  20°] (corrsponds to the visible rotation of the sign as we pass it);
+- rotation around Z (coming 'out of the picture plane') axis: [-15°  15°] (corresponds to the errors in sign placement 
+	and to the distortions introduced by wide-angle camera when we pass the sign).
+
+The sixth code cell of the IPython notebook contains the code for augmenting the data set.
+
+
+Here is an example of an original image and botion blur distortion applyed to that image:
+
+![alt text][image2]
+
+And here you can see rotations applyed to the same image
+
+![alt text][image3]
 
 
 
 #### 2. Dataset organization. 
 
+First experiments were conducted using train, validation and test sets provided in the given file.
+After several runs on different network arcitectures, I've noticed that didn't rise above 
+the moderate value of 0.985 (it means 60-70 errors per original validation set with 4010 images).
+I've displayed the images that were not classified correctly and noticed, that they contained
+several sequences of the same sign in some 'extreme' conditions (e.g. over- or under-exposed).
+
+Here is an example of sequence of valiation set errors:
+
+![alt text][image4]
+
+From that I've made a conclusion that trainig and validation set were not properly balanced (e.g., there were
+no examples of over-exposured 30 sign in the training set). The solution was, according to wonderful
+Andrew Ng's lecture ['Nuts and bolts of machine learning'](https://www.youtube.com/watch?v=F1ka6a13S9I), 
+to:
+- merge trainig and validation data into one 'Dev' set;
+- reserve 10% of the set for pre-final test (DevTest set);
+- use the rest of the data (DevValTrn set) for 5-fold cross-validation.
+
+Dataset splitting was not completely random: I've preserved the same proportion (10% for DevTest and 20% for Validation)
+for each class, merging and shuffling results afterwards. Data augmentation was performed on each fold of the
+5-fold cross-validation.
+
+ Original Test set was left intact and was not used untill the last step of the training.
+
+DevTest set contained 3920 images. From the rest Dev set (35289 images), on each fold of the cross-validation 7039 images were
+assigned to the Validation set, and 28520 - to the train set, which was autmented to 172000 images (4000 images per class).
+
+
 The code for splitting the data into training and validation sets is contained in the fifth code cell of the IPython notebook.  
 
-To cross validate my model, I randomly split the training data into a training set and validation set. I did this by ...
-
-My final training set had X number of images. My validation set and test set had Y and Z number of images.
-
-The sixth code cell of the IPython notebook contains the code for augmenting the data set. I decided to generate additional data because ... To add more data to the the data set, I used the following techniques because ... 
-
-Here is an example of an original image and an augmented image:
-
-![alt text][image3]
-
-The difference between the original data set and the augmented data set is the following ... 
+After model selection and parameter tuning, three best models were trained on the whole DevValTrn set and validated on DevTest set.
+The best model was trained on united Dev set (once again - according to the advice from the ['Nuts and bolts'](https://www.youtube.com/watch?v=F1ka6a13S9I)) - 
+and tested on the original test set.
 
 
-####3. Describe, and identify where in your code, what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
+#### 3. Model architecture.
+
+First preliminary tests were conducted on 'lab' LeNet network.
+
+Then I switched to the variant of the 'Multi-scale convolutional network' by Pierre Sermanet [1][2].
+In '*real life* it was the first 'deep' network I used for sign recognition - first using  EBLearn framework by Sermanet [3],
+then switching to more flexible (and supported) [Torch](http://torch.ch/) - Lua-based machine learning framework.
+
+Starting from 'original' multi-scale network, some changes were introduced and tested, and
+now my implementation has some differences from the original one:
+- instead of 5x5 convolutions, I use sequence of two 3x3 covolutions (idea from [4]).
+- I use **ReLU** activations between convolutional layers, and **tanh** after the last convolutional layer and between fully-connected layers;
+- I use smaller layer sizes to reduce computational speed and to decrease the chance of overfitting.
+- I use dropout [5] in fully-connected layer. 
+
+(In 'production' torch code I use [PReLU](https://github.com/torch/nn/blob/master/doc/transfer.md#prelu) activations and [BatchNormalization] layer,
+but I'm not ready to implement them in TF)
+
+I've tested sevaral additional models with deeper layers, or additional fully-conneted layer. These models
+ clearly overfitted (with zero train loss and validation loss a little bit larger then of chosen network).
+
 
 The code for my final model is located in the seventh cell of the ipython notebook. 
 
@@ -129,46 +175,65 @@ My final model consisted of the following layers:
 | Layer         		|     Description	        					| 
 |:---------------------:|:---------------------------------------------:| 
 | Input         		| 32x32x3 RGB image   							| 
-| Convolution 3x3     	| 1x1 stride, same padding, outputs 32x32x64 	|
+| Hyper Layer 1      	|					   							| 
+| Convolution 3x3     	| 1x1 stride, VALID padding, outputs 30x30x4 	|
 | RELU					|												|
-| Max pooling	      	| 2x2 stride,  outputs 16x16x64 				|
-| Convolution 3x3	    | etc.      									|
-| Fully connected		| etc.        									|
-| Softmax				| etc.        									|
-|						|												|
-|						|												|
+| Convolution 3x3     	| 1x1 stride, VALID padding, outputs 28x28x8 	|
+| Max pooling	      	| 2x2 stride,  outputs 14x14x8 					|
+| RELU					|												|
+| Hyper Layer 2      	|					   							| 
+| Convolution 3x3     	| 1x1 stride, VALID padding, outputs 12x12x8 	|
+| RELU					|												|
+| Convolution 3x3     	| 1x1 stride, VALID padding, outputs 10x10x16 	|
+| Max pooling	      	| 2x2 stride,  outputs 5x5x16 					|
+| flatten to **Flat2**	    | 400x1    									|
+| RELU					|												|
+| Hyper Layer 3      	|					   							| 
+| Convolution 3x3     	| 1x1 stride, VALID padding, outputs 3x3x32 	|
+| RELU					|												|
+| Convolution 3x3     	| 1x1 stride, VALID padding, outputs 1x1x32 	|
+| RELU					|												|
+| flatten to **Flat3**	    | 32x1    									|
+| concatenate **Flat2**	and **Flat3**    | 432x1    					|
+| Fully connected		| Input 432, output 120      					|
+| dropout 0.5			|												|
+| tanh					|												|
+| Fully connected		| Input 120, output 43      					|
+| Softmax				|	        									|
  
 
 
-####4. Describe how, and identify where in your code, you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
+#### 4. Model training. include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
+
+
+Models were trained using ADAM optimizer with exponential learning rate decay (starting form 1e-1, it was reduced by a factor of 0.998 after 
+70 iterations, so that on 50th epoch effective learnig rate was 8.5e-5);
 
 The code for training the model is located in the eigth cell of the ipython notebook. 
 
-To train the model, I used an ....
 
-####5. Describe the approach taken for finding a solution. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
+
+#### 5. Discussion
 
 The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
 
 My final model results were:
-* training set accuracy of ?
-* validation set accuracy of ? 
-* test set accuracy of ?
+* training set accuracy of .999
+* validation set accuracy of .997
+* test set accuracy of .961
 
-If an iterative approach was chosen:
-* What was the first architecture that was tried and why was it chosen?
-* What were some problems with the initial architecture?
-* How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to over fitting or under fitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
-* Which parameters were tuned? How were they adjusted and why?
-* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
+I've planned to use iterative approach - but fished by using first architecture I've build for this project.
+It is based on well-knows Pierre Sermaet multi-scale network [1][2], some changes (e.g. usage of ReLU and tanh
+activations) I introduced and tested some years ago.
 
-If a well known architecture was chosen:
-* What architecture was chosen?
-* Why did you believe it would be relevant to the traffic sign application?
-* How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
+Desision to replace 5x5 convolution by a sequence of two 3x3 convolutions was influenced by [4]. It proved to be right desision: 
+I've performed test with 'backward repacement'. and it showed the result that was 1% worse.
+
+
+
  
 
-###Test a Model on New Images
+### Test a Model on New Images
 
 ####1. Choose five German traffic signs found on the web and provide them in the report. For each image, discuss what quality or qualities might be difficult to classify.
 
@@ -212,3 +277,6 @@ For the first image, the model is relatively sure that this is a stop sign (prob
 
 
 For the second image ... 
+
+### Conclusion
+
