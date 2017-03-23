@@ -44,7 +44,7 @@ def eval_data(xv, yv):
 
 
 #%%
-EPOCHS = 20
+EPOCHS = 50
 BATCH_SIZE = 100
 
 
@@ -61,7 +61,7 @@ fc2 = MixNet(batch_x)
 step = tf.Variable(0, trainable=False)
 starter_learning_rate = 1e-3
 learning_rate = tf.train.exponential_decay(starter_learning_rate, step, 
-                                          100, 0.998, staircase=True)
+                                          70, 0.998, staircase=True)
 
 
 loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=ohy))
@@ -75,7 +75,7 @@ saver = tf.train.Saver();
 
 #%%
     
-FOLDS = 10;
+FOLDS = 5;
 #config = tf.GPUOptions(per_process_gpu_memory_fraction = 0.7)
 with tf.Session() as sess:
 
@@ -89,7 +89,7 @@ with tf.Session() as sess:
     
     for fold in range(FOLDS):
         sess.run(tf.global_variables_initializer())
-        idxVal,idxTrn = splitIndicies(devIndicies,10,fold)
+        idxVal,idxTrn = splitIndicies(devIndicies,20,fold)
         (x,y) = augmentImageList(Xgn[idxTrn], Y[idxTrn], 4000)
         xval = Xgn[idxVal]
         yval = Y[idxVal]
