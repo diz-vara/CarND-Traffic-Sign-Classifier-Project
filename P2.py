@@ -116,6 +116,10 @@ gs = gridspec.GridSpec(n_classes // cols + 1, cols)
 
 fig1 = plt.figure(num=1, figsize=figsize)
 ax = []
+
+exShape = list(X_train.shape);
+exShape[0] = n_classes;
+examples = np.empty(exShape, dtype=np.uint8)
 for i in range(n_classes):
     row = (i // cols)
     col = i % cols
@@ -125,6 +129,7 @@ for i in range(n_classes):
     img = X_train[indexes[i][40]]
     #rescale to make dark images visible
     cf = np.int(255/np.max(img)) 
+    examples[i] = img*cf;
     ax[-1].imshow(img*cf)
     ax[-1].axis('off')
     
