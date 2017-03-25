@@ -61,7 +61,7 @@ fc2 = MixNet(batch_x)
 step = tf.Variable(0, trainable=False)
 starter_learning_rate = 1e-3
 learning_rate = tf.train.exponential_decay(starter_learning_rate, step, 
-                                          70, 0.998, staircase=True)
+                                          50, 0.998, staircase=True)
 
 
 loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=ohy))
@@ -76,6 +76,7 @@ saver = tf.train.Saver();
 #%%
     
 FOLDS = 5;
+EPOCHS=20;
 #config = tf.GPUOptions(per_process_gpu_memory_fraction = 0.7)
 with tf.Session() as sess:
 
@@ -87,10 +88,11 @@ with tf.Session() as sess:
     s_val_loss = [];
     s_val_acc = [];
     
+    print ('training net', save_file);
     for fold in range(FOLDS):
         sess.run(tf.global_variables_initializer())
         idxVal,idxTrn = splitIndicies(devIndicies,20,fold)
-        (x,y) = augmentImageList(Xgn[idxTrn], Y[idxTrn], 4000)
+        (x,y) = augmentImageList(Xgn[idxTrn], Y[idxTrn], 5000)
         xval = Xgn[idxVal]
         yval = Y[idxVal]
         idx = np.arange(x.shape[0])
@@ -99,6 +101,7 @@ with tf.Session() as sess:
         
         
         for i in range(EPOCHS):
+            print(save_file,"fold {}".format(fold+1), "EPOCH {} ...".format(i+1))
             np.random.shuffle(idx)
             for step in range(steps_per_epoch):
                 batch_start = step * BATCH_SIZE
@@ -109,7 +112,7 @@ with tf.Session() as sess:
                 #print ("Epoch ", "%4d" % i, " ,step ", "%4d" % step, " from ", "%4d" % steps_per_epoch, "\r");
     
             val_loss, val_acc = eval_data(xval, yval)
-            print("fold {}".format(fold+1), "EPOCH {} ...".format(i+1), " Validation loss = {:.3f}".format(val_loss), "Train loss = {:.5f}".format(loss))
+            print("Validation loss = {:.3f}".format(val_loss), "Train loss = {:.5f}".format(loss))
             print("Validation accuracy = {:.3f}".format(val_acc), " Learning rate", "%.9f" % sess.run(learning_rate))
             print()
     

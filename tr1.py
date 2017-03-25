@@ -9,9 +9,29 @@ Created on Wed Mar 22 19:19:38 2017
 EPOCHS=50
 
 
-(x,y) = augmentImageList(Xgn[idxDev], Y[idxDev], 5000)
+(x,y) = augmentImageList(Xgn[idxDev], Y[idxDev], 8000)
 xval = Xgn[idxDevTest]
 yval = Y[idxDevTest]
+
+
+batch_x = tf.placeholder(tf.float32, [None,32,32,3])
+# 32 types
+batch_y = tf.placeholder(tf.int32, (None))
+ohy = tf.one_hot(batch_y,43);
+fc2 = MixNet(batch_x)
+
+step = tf.Variable(0, trainable=False)
+starter_learning_rate = 1e-3
+learning_rate = tf.train.exponential_decay(starter_learning_rate, step, 
+                                          100, 0.998, staircase=True)
+
+
+loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=fc2, labels=ohy))
+opt = tf.train.AdamOptimizer(learning_rate)
+train_op = opt.minimize(loss_op, global_step = step)
+correct_prediction = tf.equal(tf.argmax(fc2, 1), tf.argmax(ohy, 1))
+accuracy_op = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
 
 saver = tf.train.Saver();
 
@@ -42,7 +62,7 @@ with tf.Session() as sess:
     
         val_loss, val_acc = eval_data(xval, yval)
         trn_loss, trn_acc = eval_data(x, y)
-        print("EPOCH {} ...".format(i+1), 
+        print(save_file, "EPOCH {} ...".format(i+1), 
               "Learning rate", "%.9f" % sess.run(learning_rate))
         print("Validation loss = {:.3f}".format(val_loss), 
               "Validation accuracy = {:.3f}".format(val_acc))
@@ -54,8 +74,8 @@ with tf.Session() as sess:
     saver.save(sess,final_save_file)    
     
     # Evaluate on the test data
-    tst_loss, tst_acc = eval_data(Xgn_test, y_test)
-    print("Test loss = {:.3f}".format(tst_loss), "Test accuracy = {:.3f}".format(tst_acc))
+    #tst_loss, tst_acc = eval_data(Xgn_test, y_test)
+    #print(save_file, "Test loss = {:.3f}".format(tst_loss), "Test accuracy = {:.3f}".format(tst_acc))
 
 
 
