@@ -32,7 +32,6 @@ for i in range(nImages):
     ax.append(fig1.add_subplot(gs[row, col]))
     #example
     img = newImages[i]
-    #rescale to make dark images visible
     ax[-1].imshow(img)
     ax[-1].axis('off')
 
