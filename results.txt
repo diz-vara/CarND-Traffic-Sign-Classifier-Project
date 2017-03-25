@@ -9,6 +9,45 @@ train on all data:
 Validation loss = 0.267 Validation accuracy = 0.960
 Train loss (drop) = 0.01381 Train loss = 0.00054 Train acc  = 0.99988
 
+with scaling 
+EPOCH 50 ... Learning rate 0.000013511
+Validation loss = 0.016 Validation accuracy = 0.995
+Train loss (drop) = 0.01380 Train loss = 0.00123 Train acc  = 0.99978
+
+Test loss = 0.153 Test accuracy = 0.969
+
+
+./mixNet0_tanh.ckpt EPOCH 50 ... Learning rate 0.000031956
+Validation loss = 0.014 Validation accuracy = 0.997
+Train loss (drop) = 0.00219 Train loss = 0.00050 Train acc  = 0.99992
+
+./mixNet0_tanh.ckpt Test loss = 0.167 Test accuracy = 0.968
+
+
+30 epochs
+./mixNet0_named.ckpt EPOCH 30 ... Learning rate 0.000075581
+Validation loss = 0.106 Validation accuracy = 0.982
+Train loss (drop) = 0.06119 Train loss = 0.00539 Train acc  = 0.99845
+
+./mixNet0_named.ckpt Test loss = 0.118 Test accuracy = 0.974
+
+
+
+
+
+-----------------------
+mixNetI with scaling
+
+Validation loss = 0.026 Validation accuracy = 0.994
+Train loss (drop) = 0.01584 Train loss = 0.00352 Train acc  = 0.99902
+
+Test loss = 0.177 Test accuracy = 0.965
+
+
+
+-----------------------
+
+
 
 
 
@@ -23,3 +62,19 @@ Test loss = 0.284 Test accuracy = 0.958
 after training on all data:
 
 Test loss = 0.212 Test accuracy = 0.962
+
+with scaling
+
+Validation loss = 0.026 Validation accuracy = 0.994
+Train loss (drop) = 0.02723 Train loss = 0.00350 Train acc  = 0.99897
+
+Test loss = 0.212 Test accuracy = 0.962
+
+
+
+with scaling 8000 
+
+Validation loss = 0.025 Validation accuracy = 0.995
+Train loss (drop) = 0.03560 Train loss = 0.00599 Train acc  = 0.99819
+
+./mixNet0_conv.ckpt Test loss = 0.193 Test accuracy = 0.964

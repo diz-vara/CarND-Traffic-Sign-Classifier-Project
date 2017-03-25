@@ -250,6 +250,7 @@ def augmentImage(img, N:int):
     rangeY = [-35, 35];
     rangeZ = [-15, 15];
     rangeS = [0.8, 1.2]
+    rangeI = [-0.3, 0.3];
 
 
     for i in range(N-1):
@@ -258,12 +259,14 @@ def augmentImage(img, N:int):
         z = np.random.uniform(rangeZ[0], rangeZ[1]);
         scale = np.random.uniform(rangeS[0], rangeS[1]);
         motion = np.random.uniform();
-        if motion > 0.9:
+        if motion > 0.8:
             tmp = cv2.filter2D(img,-1,motion_kern5);
-        elif motion > 0.6 :
+        elif motion > 0.5 :
             tmp = cv2.filter2D(img,-1,motion_kern3);
         else:
             tmp = img;
+        intens = np.random.uniform(rangeI[0], rangeI[1]);
+        tmp = np.clip(tmp+intens,-0.5,0.5);
         out.append(transformImg(tmp,x,y,z,scale));
     return out;
 #%%
@@ -330,7 +333,7 @@ def augmentImgClass(imgList, outOrN ):
                 k = k+1;
         else:
             if (k < outLen):
-                out[k] = imf;
+                out[k] = img;
             k = k+1;
     #print (l,k,cf)
     return out;
