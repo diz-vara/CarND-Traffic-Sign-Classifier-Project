@@ -7,10 +7,10 @@
 
 [//]: # (Image References)
 
-[image1]: ./classes.png "Sign classes"
-[image2]: ./motionBlur.png "Motion blur"
-[image3]: ./rotations.png "Rotations"
-[image4]: ./errors.png "errors"
+[image1]: ./Pictures/classes.png "Sign classes"
+[image2]: ./Pictures/motionBlur.png "Motion blur"
+[image3]: ./Pictures/rotations.png "Rotations"
+[image4]: ./Pictures/errors.png "errors"
 [image5]: ./examples/placeholder.png "Traffic Sign 2"
 [image6]: ./examples/placeholder.png "Traffic Sign 3"
 [image7]: ./examples/placeholder.png "Traffic Sign 4"
@@ -90,10 +90,10 @@ you'll get very good validation accuracy - but poor resuts for test and for real
 
 For each new image were chosen randomly:
 - motion blur: no motion (60%), moderate blur with 3x3 kernel (30%), strong blur with 5x5 kernel (10%)
-- rotation around X (horizontal) axis: [0° 20°] (20° corresponds to the sign seen from below: it makes no sense to use negative angles,
+- rotation around X (horizontal) axis: [0Â° 20Â°] (20Â° corresponds to the sign seen from below: it makes no sense to use negative angles,
 	as normally we do not observe signs from above);
-- rotation around Y (vertical) axis: [-20°  20°] (corrsponds to the visible rotation of the sign as we pass it);
-- rotation around Z (coming 'out of the picture plane') axis: [-15°  15°] (corresponds to the errors in sign placement 
+- rotation around Y (vertical) axis: [-20Â°  20Â°] (corrsponds to the visible rotation of the sign as we pass it);
+- rotation around Z (coming 'out of the picture plane') axis: [-15Â°  15Â°] (corresponds to the errors in sign placement 
 	and to the distortions introduced by wide-angle camera when we pass the sign).
 
 The sixth code cell of the IPython notebook contains the code for augmenting the data set.
