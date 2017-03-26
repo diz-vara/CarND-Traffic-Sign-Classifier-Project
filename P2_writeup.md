@@ -92,10 +92,10 @@ you'll get very good validation accuracy - but poor results for test and for rea
 
 For each new image were chosen randomly:
 - motion blur: no motion (60%), moderate blur with 3x3 kernel (30%), strong blur with 5x5 kernel (10%)
-- rotation around X (horizontal) axis: [0Â° 20Â°] (20Â° corresponds to the sign seen from below: it makes no sense to use negative angles,
+- rotation around X (horizontal) axis: [0° 20°] (20° corresponds to the sign seen from below: it makes no sense to use negative angles,
 	as normally we do not observe signs from above);
-- rotation around Y (vertical) axis: [-35Â°  35Â°] (corresponds to the visible rotation of the sign as we pass it);
-- rotation around Z (coming 'out of the picture plane') axis: [-15Â°  15Â°] (corresponds to the errors in sign placement 
+- rotation around Y (vertical) axis: [-35°  35°] (corresponds to the visible rotation of the sign as we pass it);
+- rotation around Z (coming 'out of the picture plane') axis: [-15°  15°] (corresponds to the errors in sign placement 
 	and to the distortions introduced by wide-angle camera when we pass the sign).
 
 
@@ -208,12 +208,30 @@ The code for training the model is located in the cells **7**, **8** and **9** o
 The code for calculating the accuracy of the model is located in the cells **8** and **9** of the Ipython notebook.
 
 My final model results were:
-* training set accuracy of .998
+
+* training set accuracy of .99845
 * validation set accuracy of .982
 * test set accuracy of .974
 
+Here I report results from the last training | first test run performed by
+Python script on my 'compute server' with Titan X GPU. After I've transferred code to
+the iPython notebook and ran it on my home computer (without GPU card), results 
+were different:
+
+* training set accuracy of .99903
+* validation set accuracy of .986
+* test set accuracy of .975
+
+
+Most probably, the difference is a pure chance (due to the random generation of augmented data
+and random weight initialization). But there may be a system in this difference: AFAIK, GPU computations
+on 'game' cards use single-precision float-point calculations, but computation on
+my 'home CPU' were performed with a double precision. When I ran the same notebook on the GPU, it resulted in a little bit lower training accuracy (0.99867 vs 0.99903) and validation accuracy (0.979 vs 0.986). 
+I report it here to explain difference in figures between html report and this writeup.*
+
+
 I've planned to use iterative approach - but fished by using first architecture I've build for this project.
-It is based on well-knows Pierre Sermaet multi-scale network [1][2], some changes (e.g. usage of ReLU and tanh
+It is based on well-knows Pierre Sermanet multi-scale network [1][2], some changes (e.g. usage of ReLU and tanh
 activations) I introduced and tested some years ago.
 
 Decision to replace 5x5 convolution by a sequence of two 3x3 convolutions was influenced by [4]. It proved to be right decision: 
@@ -251,7 +269,7 @@ Here are the results of the prediction:
 ![alt text][image11]
 
 In this table original image is shown in the first column, bar-plot of top-5 
-probabilities (in log scale) - in the second column. Last 5 columnts show
+probabilities (in log scale) - in the second column. Last 5 columns show
 the images of top-5 classes.
 All signs were predicted correctly, with high probability (probability of the second class
 varies from 1e-4 to 1e-8).
@@ -261,11 +279,15 @@ But when I took really hard examples from my collection,
 
 ![alt text][image12]
 
-this model recognized only seven sign out of ten:
+this model recognized only eight sign out of ten:
 
 ![alt text][image13]
 
-One can notice, that for all three errors top probability is quite low (0.53, 0.33, 0.64). whereas for correct recognition correct class probabilities are greater than 0.9 (from 0.94 to 1.0). It means that we can use that number to measure model's certainly on it's prediction – and discard wrong predictions.
+One can notice, that for two errors top probability is  low (0.24, 0.88), 
+whereas for correct recognition correct class probabilities are greater 
+than 0.9 (from 0.94 to 1.0). The only exclusion is sign '80', that was recognized
+correctly - but with very low confidence of 0.37. 
+It means that we can use that number to measure model's certainly on it's prediction, and discard wrong predictions.
 
 ## Additional experiments with dataset.
 
@@ -280,7 +302,7 @@ To do it, I:
 - used the rest of the data (DevValTrn set) for 5-fold cross-validation.
 
 Dataset splitting was not completely random: I've preserved the same proportion (10% for DevTest and 20% for Validation)
-for each class, merging and shuffling results afterward. Data augmentation was performed on each fold of the
+for each class, merging and shuffling results afterwards. Data augmentation was performed on each fold of the
 5-fold cross-validation.
 
 Original Test set was left intact and was not used until the last step of the training.
@@ -289,7 +311,7 @@ DevTest set contained 3920 images. From the rest Dev set (35289 images), on each
 assigned to the Validation set, and 28520 - to the train set, which was augmented to 172000 images (4000 images per class).
 
 In this setup, I got wonderful validation accuracy up to .9985 - but test accuracy was the same.
-The explanation is very simple: originally we had different sings (I mean different physical objects) in train and validation sets.
+The explanation is very simple: originally we had different signs (I mean different physical objects) in train and validation sets.
 After merging and shuffling, that separation gone away - and I got high score. But this high score
 did not reflect real network capability.
 
@@ -325,7 +347,7 @@ to all 'restrictive' sings (round signs with red border). Then I trained separat
 for all 92 types, I got only accuracy of 0.96.
 
      Several methods were proposed as a solution to this problem, including ECOC (error-correction output codes [6],
- wich received direct application to the traffic signs in [7]). I do not thing this problem ceased to exist 
+ which received direct application to the traffic signs in [7]). I do not thing this problem ceased to exist 
  with successful classification of ImageNet into 1000 classes. May be, you can just skip it - if you have
  millions of points of data (and right answer can be anywhere in top-5 predictions). I think that the most
  interesting direction is the combination of neural networks and trees (or forests) [8][9].
@@ -345,13 +367,13 @@ have some differences: narrow or wide border, white or yellow background.
 
 ### Literature
 
-1. Sermanet, P. & LeCun, Y. Traffic sign recognition with multi-scale convolutional networks. in Neural Networks (IJCNN), The 2011 International Joint Conference on 2809â€“2813 (IEEE, 2011).
+1. Sermanet, P. & LeCun, Y. Traffic sign recognition with multi-scale convolutional networks. in Neural Networks (IJCNN), The 2011 International Joint Conference on 2809–2813 (IEEE, 2011).
 2. Sermanet, P., Kavukcuoglu, K. & LeCun, Y. Traffic signs and pedestrians vision with multi-scale convolutional networks. in Snowbird Machine Learning Workshop 2, 8 (2011).
-3. Sermanet, P., Kavukcuoglu, K. & LeCun, Y. Eblearn: Open-source energy-based learning in c++. in Tools with Artificial Intelligence, 2009. ICTAIâ€™09. 21st International Conference on 693â€“697 (IEEE, 2009).
+3. Sermanet, P., Kavukcuoglu, K. & LeCun, Y. Eblearn: Open-source energy-based learning in c++. in Tools with Artificial Intelligence, 2009. ICTAI’09. 21st International Conference on 693–697 (IEEE, 2009).
 4. Szegedy, C., Vanhoucke, V., Ioffe, S., Shlens, J. & Wojna, Z. Rethinking the Inception Architecture for Computer Vision. arXiv:1512.00567 [cs] (2015).
-5. Srivastava, N., Hinton, G. E., Krizhevsky, A., Sutskever, I. & Salakhutdinov, R. Dropout: a simple way to prevent neural networks from overfitting. Journal of Machine Learning Research 15, 1929–1958 (2014).
+5. Srivastava, N., Hinton, G. E., Krizhevsky, A., Sutskever, I. & Salakhutdinov, R. Dropout: a simple way to prevent neural networks from overfitting. Journal of Machine Learning Research 15, 1929?1958 (2014).
 6. Dietterich, T. G. & Bakiri, G. Solving multiclass learning problems via error-correcting output codes. arXiv preprint cs/9501101 (1995).
-7. Bar?, X., Escalera, S., Vitri?, J., Pujol, O. & Radeva, P. Traffic sign recognition using evolutionary adaboost detection and forest-ECOC classification. Intelligent Transportation Systems, IEEE Transactions on 10, 113–126 (2009).
+7. Bar?, X., Escalera, S., Vitri?, J., Pujol, O. & Radeva, P. Traffic sign recognition using evolutionary adaboost detection and forest-ECOC classification. Intelligent Transportation Systems, IEEE Transactions on 10, 113?126 (2009).
 8. Zhou, Z.-H. & Feng, J. Deep Forest: Towards An Alternative to Deep Neural Networks. arXiv:1702.08835 [cs, stat] (2017).
 9. Balestriero, R. Neural Decision Trees. arXiv:1702.07360 [cs, stat] (2017).
 
