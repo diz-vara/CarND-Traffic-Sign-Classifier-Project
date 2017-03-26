@@ -47,7 +47,9 @@ def test_new_data(xv, yv):
 
 
 #%%
-newLabels = [14,28,8,10,4,5,5,20,31,31]
+#newLabels = [14,28,8,10,4,5,5,20,31,31]
+
+newLabels = [5,22,9,14,4,17,3,3,16,10]
 
 print ("testing " , save_file)
 

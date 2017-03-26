@@ -8,8 +8,9 @@ Created on Fri Mar 24 22:46:21 2017
 import os
 
 newImages = []
-for entry in os.scandir('../Data/Signs/t'):
+for entry in os.scandir('../Data/Signs/hard'):
     if entry.is_file():
+        print(entry.name)
         img = cv2.imread(entry.path)
         img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         img = cv2.resize(img,(32,32))
@@ -35,4 +36,4 @@ for i in range(nImages):
     ax[-1].imshow(img)
     ax[-1].axis('off')
 
-        
+newImagesN = normalizeImageList(newImages)        
