@@ -23,6 +23,7 @@
 [image12]: ./Pictures/hard.png "new1"
 [image13]: ./Pictures/HardTest.png "new1"
 
+[image14]: ./Pictures/sl50.png "sl50"
 
 
 Here is a link to my [project code](https://github.com/diz-vara/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
@@ -41,7 +42,7 @@ signs data set:
 * The number of unique classes/labels in the data set is 43
 
 
-The code for this step is contained in the X code cell of the IPython notebook.  
+The code for this step is contained in the code cells **2**, **3** and **4** of the IPython notebook.  
 
 One example of each class shown, with number of samples in the header
 
@@ -56,7 +57,7 @@ This distribution may be significant in a final product as a Bayesian prior of s
 
 #### 1. Image pre-processing.
 
-The code for this step is contained in the fourth code cell of the IPython notebook.
+The code for this step is contained in the code cell **5** of the IPython notebook.
 
 I decided not to convert images to the grayscale. Such a conversion seems good for model size 
 and speed - but we certainly lose some valuable information.
@@ -147,11 +148,11 @@ now my implementation has some differences from the original one:
 (In 'production' torch code I use [PReLU](https://github.com/torch/nn/blob/master/doc/transfer.md#prelu) activations and [BatchNormalization] layer,
 but I'm not ready to implement them in TF)
 
-I've tested sevaral additional models with deeper layers, or additional fully-conneted layer. These models
+I've tested several additional models with deeper layers, or additional fully-conneted layer. These models
  clearly overfitted (with zero train loss and validation loss a little bit larger then of chosen network).
 
 
-The code for my final model is located in the seventh cell of the ipython notebook. 
+The code for my final model is located in the cell **6** of the ipython notebook. 
 
 My final model consisted of the following layers:
 
@@ -198,13 +199,13 @@ During tests, network was trained for 20 epochs, final training consisted of 30 
 With larger number of epochs, model showed signs of overfitting (decrease of the training loss
 with non-decreasing validation loss ).
 
-The code for training the model is located in the eighth cell of the ipython notebook. 
+The code for training the model is located in the cells **7**, **8** and **9** of the ipython notebook. 
 
 
 
 #### 5. Discussion
 
-The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
+The code for calculating the accuracy of the model is located in the cells **8** and **9** of the Ipython notebook.
 
 My final model results were:
 * training set accuracy of .998
@@ -242,7 +243,7 @@ different European countries:
 
 2. Model's predictions on these traffic signs
 
-The code for making predictions on my final model is located in the tenth cell of the Ipython notebook.
+The code for making predictions on my final model is located in the cells **10 - 13** of the Ipython notebook.
 
 
 Here are the results of the prediction:
@@ -304,7 +305,7 @@ the smaller dataset (about 15000 images for 94 sign classes). But those images w
 I used only one or two images of the one sign. GTSRB is three times large - but it is highly redundant,
 with up to 10 images of the same sign.
 
-I know that data collection (including annotations and checking) is extremely time-consuming and boring 
+I know that data collection (including annotations and <double|tr-ple>-checking) is extremely time-consuming and boring 
 task - but it is **very** important for any successful project.
 
 
@@ -313,10 +314,31 @@ task - but it is **very** important for any successful project.
 
 
 I also want to mention several questions that are (IMHO) still open in this old TSR field:
+- **Garbage collector.** My experiments on real-world data showed, that it classification results improve if you add additional class
+for different kinds of 'garbage'. Real object ('sign' in our case) detectors are never ideal, normal sign detector
+usually loves windows and wheels (and may detect the face of your boss as well). Without 'garbage class', wheel image may obtain some sign label with rather
+high probability.  Using 'garbage' class, you can filter out most of the wrong detections.
 
-- number of classes and drop: ECOC, tree?
-- trash class
-- transfer
+- **Large number of classes.** I've started sign recognition from the very small set of 'speed limit' signs, then it was extended
+to all 'restrictive' sings (round signs with red border). Then I trained separate classifier for warning
+(triangular) signs. Both classifiers got high accuracy (up to .985). But when I trained 'united' classifier
+for all 92 types, I got only accuracy of 0.96.
+
+     Several methods were proposed as a solution to this problem, including ECOC (error-correction output codes [6],
+ wich received direct application to the traffic signs in [7]). I do not thing this problem ceased to exist 
+ with successful classification of ImageNet into 1000 classes. May be, you can just skip it - if you have
+ millions of points of data (and right answer can be anywhere in top-5 predictions). I think that the most
+ interesting direction is the combination of neural networks and trees (or forests) [8][9].
+
+ 
+- **Transfer leaning**. In many countries, traffic signs are similar (we are not talking about USA) - but they
+have some differences: narrow or wide border, white or yellow background. 
+
+    ![alt text][image14] 
+
+    We can suppress color information manually (using grayscale images), and we can get rid
+    of the border - but it would be nice to train system on a large number of white German signs -
+    and then easily transfer (without additional large-scale training) this knowledge to yellow Finnish signs.
 
 
 
@@ -328,4 +350,8 @@ I also want to mention several questions that are (IMHO) still open in this old 
 3. Sermanet, P., Kavukcuoglu, K. & LeCun, Y. Eblearn: Open-source energy-based learning in c++. in Tools with Artificial Intelligence, 2009. ICTAIâ€™09. 21st International Conference on 693â€“697 (IEEE, 2009).
 4. Szegedy, C., Vanhoucke, V., Ioffe, S., Shlens, J. & Wojna, Z. Rethinking the Inception Architecture for Computer Vision. arXiv:1512.00567 [cs] (2015).
 5. Srivastava, N., Hinton, G. E., Krizhevsky, A., Sutskever, I. & Salakhutdinov, R. Dropout: a simple way to prevent neural networks from overfitting. Journal of Machine Learning Research 15, 1929–1958 (2014).
+6. Dietterich, T. G. & Bakiri, G. Solving multiclass learning problems via error-correcting output codes. arXiv preprint cs/9501101 (1995).
+7. Bar?, X., Escalera, S., Vitri?, J., Pujol, O. & Radeva, P. Traffic sign recognition using evolutionary adaboost detection and forest-ECOC classification. Intelligent Transportation Systems, IEEE Transactions on 10, 113–126 (2009).
+8. Zhou, Z.-H. & Feng, J. Deep Forest: Towards An Alternative to Deep Neural Networks. arXiv:1702.08835 [cs, stat] (2017).
+9. Balestriero, R. Neural Decision Trees. arXiv:1702.07360 [cs, stat] (2017).
 
