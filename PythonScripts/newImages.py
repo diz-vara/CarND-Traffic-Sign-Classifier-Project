@@ -8,7 +8,7 @@ Created on Fri Mar 24 22:46:21 2017
 import os
 
 newImages = []
-for entry in os.scandir('../Data/Signs/hard'):
+for entry in os.scandir('../newSigns/hard'):
     if entry.is_file():
         print(entry.name)
         img = cv2.imread(entry.path)

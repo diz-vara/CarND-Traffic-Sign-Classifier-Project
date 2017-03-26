@@ -32,9 +32,9 @@ import cv2
 
 # TODO: Fill this in based on where you saved the training and testing data
 
-training_file = '../data/Signs/train.p'
-validation_file='../data/Signs/valid.p'
-testing_file = '../data/Signs/test.p'
+training_file = '../../data/Signs/train.p'
+validation_file='../../data/Signs/valid.p'
+testing_file = '../../data/Signs/test.p'
 
 with open(training_file, mode='rb') as f:
     train = pickle.load(f)
