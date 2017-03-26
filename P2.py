@@ -98,7 +98,7 @@ print("Number of classes =", n_classes)
 
 #count number of each class examples
 #and store the index of the last one
-classIndicies = [np.where(Y == i)[0] for i in range(n_classes)]
+classIndicies = [np.where(y_train == i)[0] for i in range(n_classes)]
 classCounts = [np.size(array) for array in classIndicies]
 
 
@@ -124,9 +124,9 @@ for i in range(n_classes):
     row = (i // cols)
     col = i % cols
     ax.append(fig1.add_subplot(gs[row, col]))
-    ax[-1].set_title('class %d, N=%d' % (i ,  counts[i]))
+    ax[-1].set_title('class %d, N=%d' % (i ,  classCounts[i]))
     #example
-    img = X_train[indexes[i][40]]
+    img = X_train[classIndicies[i][40]]
     #rescale to make dark images visible
     cf = np.int(255/np.max(img)) 
     examples[i] = img*cf;
@@ -371,7 +371,7 @@ def augmentImageList(X,Y,targetCount):
 
 #%%
 
-#Xgn_train = normalizeImageList(X_train,'G')
+Xgn_train = normalizeImageList(X_train,'G')
 Xgn_valid = normalizeImageList(X_valid,'G')
 
 (Xgn_t, Yg_t) = augmentImageList(X_train,y_train,5000)
